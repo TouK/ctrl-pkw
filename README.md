@@ -19,7 +19,7 @@ przy czym teraz ich współrzędne są na razie losowane. Docelowo trzeba będzi
 je chyba odszukać tu http://download.geofabrik.de/europe/poland.html ???
 
 
-Do uruchomienia aplikacji i testów potrzebna jest zainstalowana baza Apache Cassandra.
+Do uruchomienia aplikacji potrzebna jest zainstalowana baza Apache Cassandra.
 Na Ubuntu instaluje się ja tak:
 
 ```

@@ -34,6 +34,7 @@ repositories {
 }
 
 dependencies {
+    compile("com.google.guava:guava:18.0")
     compile("org.projectlombok:lombok:1.14.8")
 
     compile("org.springframework.boot:spring-boot-starter-web")
@@ -64,4 +65,7 @@ dependencies {
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testCompile("org.assertj:assertj-core:1.7.0")
     testCompile("org.springframework.batch:spring-batch-test")
+    testCompile("org.cassandraunit:cassandra-unit:2.0.2.2") {
+        exclude group: 'com.datastax.cassandra'
+    }
 }

@@ -24,8 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
 @WebAppConfiguration
-@IntegrationTest("server.port:0")
-public class WardsGeolocalizationIT {
+@IntegrationTest({"server.port:0", EmbeddedCassandraIT.CASSANDRA_CONFIG})
+public class WardsGeolocalizationIT extends EmbeddedCassandraIT {
 
     public static final String WARDS_URL = "http://localhost:{serverPort}/api/votings/{votingDatew}/wards?latitude={latitude}&longitude={longitude}";
 

@@ -24,9 +24,12 @@ public class CassandraContext implements InitializingBean, DisposableBean {
     @Value("${cassandra.contactPoint}")
     private String contactPoint;
 
+    @Value("${cassandra.port}")
+    private int port;
+
     @Override
     public void afterPropertiesSet() throws Exception {
-        cluster = Cluster.builder().addContactPoint(contactPoint).build();
+        cluster = Cluster.builder().addContactPoint(contactPoint).withPort(port).build();
         session = cluster.connect();
         mappingManager = new MappingManager(session);
     }
