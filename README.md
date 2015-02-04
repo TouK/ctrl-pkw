@@ -18,3 +18,10 @@ My to wszystko przeliczymy i udostępniamy stronę z wynikiem.
 przy czym teraz ich współrzędne są na razie losowane. Docelowo trzeba będzie 
 je chyba odszukać tu http://download.geofabrik.de/europe/poland.html ???
 
+
+Do uruchomienia aplikacji i testów potrzebna jest zainstalowana baza Apache Cassandra.
+Na Ubuntu instaluje się ja tak:
+
+```
+sudo apt-get install dsc2.1
+```
