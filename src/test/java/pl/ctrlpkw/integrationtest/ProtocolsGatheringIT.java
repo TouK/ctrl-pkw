@@ -2,10 +2,6 @@ package pl.ctrlpkw.integrationtest;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import pl.ctrlpkw.Application;
-import pl.ctrlpkw.CassandraContext;
-import pl.ctrlpkw.api.dto.BallotResult;
-import pl.ctrlpkw.api.dto.Protocol;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.batch.item.ExecutionContext;
@@ -22,8 +18,10 @@ import org.springframework.shell.support.util.FileUtils;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
+import pl.ctrlpkw.Application;
+import pl.ctrlpkw.api.dto.BallotResult;
+import pl.ctrlpkw.api.dto.Protocol;
 
-import javax.annotation.Resource;
 import java.io.File;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -31,14 +29,13 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
-import static org.assertj.core.api.Assertions.linesOf;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = { Application.class } )
+@SpringApplicationConfiguration(classes = { Application.class} )
 @WebAppConfiguration
-@IntegrationTest("server.port:0")
+@IntegrationTest({"server.port:0", EmbeddedCassandraIT.CASSANDRA_CONFIG})
 @Slf4j
-public class ProtocolsGatheringIT {
+public class ProtocolsGatheringIT extends EmbeddedCassandraIT {
 
     public static final String PROTOCOLS_URL = "http://localhost:{port}/api/votings/{votingDate}/protocols";
     public static final String RESULT_URL = "http://localhost:{port}/api/votings/{votingDate}/ballots/{ballotNo}/result";
@@ -48,25 +45,22 @@ public class ProtocolsGatheringIT {
 
     private RestTemplate restTemplate = new RestTemplate();
 
-    @Resource
-    private CassandraContext cassandraContext;
-
     @Test
     public void shouldAcceptProtocolsWithoutErrors() throws Exception {
         givenNoProtocolsInDatabase();
-        whenFristRound2010ProtocolsSent();
+        whenFirstRound2010ProtocolsSent();
         thenResultsAreSameAsIn2010();
     }
 
     protected void givenNoProtocolsInDatabase() {
         File schemaScript = FileUtils.getFile(Application.class, "/schema.cql");
         Arrays.stream(contentOf(schemaScript).split(";"))
-                .map(line -> StringUtils.trim(line))
-                .filter(line -> StringUtils.isNotEmpty(line))
+                .map(StringUtils::trim)
+                .filter(StringUtils::isNotEmpty)
                 .forEach(line -> cassandraContext.getSession().execute(line));
     }
 
-    protected void whenFristRound2010ProtocolsSent() throws Exception {
+    protected void whenFirstRound2010ProtocolsSent() throws Exception {
         FlatFileItemReader<FieldSet> reader = new FlatFileItemReader<>();
         reader.setResource(new ClassPathResource("pzt2010-wyn-obw.csv"));
         reader.setEncoding("Cp1250");
