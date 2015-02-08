@@ -56,10 +56,12 @@ public class WardsLoadingBatchConfig {
             ward.setCommunityCode(item.readString(2));
             ward.setWardNo(item.readInt(6));
             ward.setWardAddress(item.readString(7));
-            ward.setLocation(geometryFactory.createPoint(new Coordinate(
-                    51.55 + Math.random() * 5 - 2.5,
-                    19.07 + Math.random() * 10 - 5
-            )));
+            if (item.getFieldCount() == 15) {
+                ward.setLocation(geometryFactory.createPoint(new Coordinate(
+                        item.readDouble(13),
+                        item.readDouble(14)
+                )));
+            }
             return ward;
         };
     }

@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface WardRepository extends PagingAndSortingRepository<Ward, Long> {
 
-    @Query("select w from Ward w where w.voting = :voting and distance(w.location, :point) is not null order by distance(w.location, :point)")
+    @Query("select w from Ward w where w.location is not null and w.voting = :voting and distance(w.location, :point) is not null order by distance(w.location, :point)")
     Page<Ward> findOrderedByDistance(@Param("voting") Voting voting, @Param("point") Point point, Pageable pageable);
 
     Iterable<Ward> findByCommunityCode(String communityCode);
