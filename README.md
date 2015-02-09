@@ -14,14 +14,9 @@ My to wszystko przeliczymy i udostępniamy stronę z wynikiem.
 
 **ProtocolsGatheringIT** to test, który symuluje wybory sprzed 5 lat.
 
-**WardGeolocalizationIT** to przykład wyszukania najbliższych lokali wyborczych,
-przy czym teraz ich współrzędne są na razie losowane. Docelowo trzeba będzie 
-je chyba odszukać tu http://download.geofabrik.de/europe/poland.html ???
-
+**WardGeolocalizationIT** to przykład wyszukania najbliższych lokali wyborczych.
+W tej chwili w aplikacji wpisane są współrzędne prawie 80% lokali wyborczych.
 
 Do uruchomienia aplikacji potrzebna jest zainstalowana baza Apache Cassandra.
 Na Ubuntu instaluje się ja tak:
-
-```
-sudo apt-get install dsc2.1
-```
+http://www.datastax.com/documentation/cassandra/2.1/cassandra/install/installDeb_t.html
