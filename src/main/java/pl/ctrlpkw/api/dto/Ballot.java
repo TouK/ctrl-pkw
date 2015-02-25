@@ -1,18 +1,21 @@
 package pl.ctrlpkw.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.wordnik.swagger.annotations.ApiModel;
+import com.wordnik.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Builder;
-import pl.ctrlpkw.api.resource.BallotsResource;
 import org.glassfish.jersey.linking.Binding;
 import org.glassfish.jersey.linking.InjectLink;
 import org.glassfish.jersey.linking.InjectLinks;
 import org.joda.time.LocalDate;
+import pl.ctrlpkw.api.resource.BallotsResource;
 
 import javax.ws.rs.core.Link;
-import java.util.*;
+import java.util.List;
 
+@ApiModel
 @Getter
 @Setter
 @Builder
@@ -27,6 +30,7 @@ public class Ballot {
 
     private List<String> options;
 
+    @ApiModelProperty(hidden = true)
     @InjectLinks({
             @InjectLink(resource = BallotsResource.class, rel = "self", method = "readOne", style = InjectLink.Style.ABSOLUTE,
                     bindings = { @Binding(name = "date", value = "${instance.votingDate}") }

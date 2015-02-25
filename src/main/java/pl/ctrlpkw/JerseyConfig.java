@@ -1,9 +1,9 @@
 package pl.ctrlpkw;
 
-import pl.ctrlpkw.api.ObjectMapperProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.springframework.stereotype.Component;
+import pl.ctrlpkw.api.ObjectMapperProvider;
 
 import javax.ws.rs.ApplicationPath;
 
@@ -13,6 +13,7 @@ public class JerseyConfig extends ResourceConfig {
 
     public JerseyConfig() {
         packages("pl.ctrlpkw.api.resource");
+        packages("com.wordnik.swagger.jersey.listing");
         register(ObjectMapperProvider.class);
 
         //Declarative linking need the patched version of Jersey

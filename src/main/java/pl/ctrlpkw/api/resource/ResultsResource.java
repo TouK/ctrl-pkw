@@ -2,15 +2,17 @@ package pl.ctrlpkw.api.resource;
 
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import org.joda.time.LocalDate;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Component;
 import pl.ctrlpkw.CassandraContext;
 import pl.ctrlpkw.api.dto.BallotResult;
 import pl.ctrlpkw.model.read.Ballot;
 import pl.ctrlpkw.model.read.BallotsRepository;
 import pl.ctrlpkw.model.write.Protocol;
 import pl.ctrlpkw.model.write.ProtocolAccessor;
-import org.joda.time.LocalDate;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.transaction.Transactional;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.StreamSupport;
 
+@Api("Wyniki")
 @Path("/votings/{date}/ballots/{ballotNo}/result")
 @Produces(MediaType.APPLICATION_JSON)
 @Component
@@ -37,6 +40,7 @@ public class ResultsResource {
     @Resource
     CassandraContext cassandraContext;
 
+    @ApiOperation("Pobranie wyników głosowania dla konkretnego dnia i konkretnej karty")
     @GET
     @Transactional
     @Cacheable("results")
@@ -67,7 +71,7 @@ public class ResultsResource {
                             summingIterator(
                                     r1.getVotesCountPerOption().iterator(),
                                     r2.getVotesCountPerOption().iterator(),
-                                    Long.valueOf(0l),
+                                    0l,
                                     (a, b) -> a + b
                             )
                     )
@@ -84,7 +88,7 @@ public class ResultsResource {
                             summingIterator(
                                     r1.getVotesCountPerOption().iterator(),
                                     r2.getVotesCountPerOption().iterator(),
-                                    Long.valueOf(0l),
+                                    0l,
                                     (a, b) -> a + b
                             )
                     )

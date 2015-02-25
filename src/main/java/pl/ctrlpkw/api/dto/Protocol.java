@@ -1,7 +1,6 @@
 package pl.ctrlpkw.api.dto;
 
-//import com.wordnik.swagger.annotations.ApiModel;
-//import com.wordnik.swagger.annotations.ApiModelProperty;
+import com.wordnik.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,12 +11,12 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Collection;
 
+@ApiModel
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-//@ApiModel
 public class Protocol {
 
     @NotNull
