@@ -9,7 +9,7 @@ import lombok.experimental.Builder;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.Collection;
+import java.util.List;
 
 @ApiModel
 @Getter
@@ -26,7 +26,7 @@ public class Protocol {
     private Integer wardNo;
 
     @Valid
-    private Collection<BallotResult> ballotResults;
+    private List<BallotResult> ballotResults;
 
 
 }

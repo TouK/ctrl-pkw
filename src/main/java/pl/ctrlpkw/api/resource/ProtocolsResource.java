@@ -2,7 +2,7 @@ package pl.ctrlpkw.api.resource;
 
 import com.datastax.driver.mapping.Mapper;
 import com.google.common.base.Optional;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +35,7 @@ public class ProtocolsResource {
     @ApiOperation("Przesłanie informacji o wynikach głosowania w obwodzie dla wszystkich kart")
     @POST
     public void create(@Valid pl.ctrlpkw.api.dto.Protocol protocol) {
-        for (BallotResult ballotResult : Optional.fromNullable(protocol.getBallotResults()).or(Sets.<BallotResult>newHashSet())) {
+        for (BallotResult ballotResult : Optional.fromNullable(protocol.getBallotResults()).or(Lists.<BallotResult>newArrayList())) {
             Protocol localBallotResult = Protocol.builder()
                     .id(UUID.randomUUID())
                     .ballot(Ballot.builder().votingDate(LocalDate.parse("2010-06-20").toDate()).no(ballotResult.getBallotNo()).build())
