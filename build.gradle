@@ -19,6 +19,11 @@ apply plugin: 'spring-boot'
 jar {
     baseName = 'ctrl-pkw'
     version = '0.0.1-SNAPSHOT'
+    into ("resources") {
+        from ("${projectDir}/src/main/webapp/") {
+            include "**"
+        }
+    }
     manifest {
         attributes(
                 "Specification-Version": version,
@@ -66,7 +71,7 @@ dependencies {
     compile("com.datastax.cassandra:cassandra-driver-core:2.1.3")
     compile("com.datastax.cassandra:cassandra-driver-mapping:2.1.3")
     
-    compile("org.webjars:swagger-ui:2.1.0-alpha.6")
+    compile("org.webjars:swagger-ui:2.1.0-M1")
     compile("com.wordnik:swagger-jersey2-jaxrs_2.11:1.3.12")
 
     testCompile("junit:junit:4.10")
@@ -76,6 +81,7 @@ dependencies {
     testCompile("org.springframework.batch:spring-batch-test")
     testCompile("org.cassandraunit:cassandra-unit:2.0.2.2") {
         exclude group: 'com.datastax.cassandra'
+        exclude group: 'org.slf4j'
     }
     
     //compile("com.nimbusds:nimbus-jose-jwt:2.10.1")
