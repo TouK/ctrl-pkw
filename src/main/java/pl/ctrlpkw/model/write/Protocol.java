@@ -1,7 +1,11 @@
 package pl.ctrlpkw.model.write;
 
 
-import com.datastax.driver.mapping.annotations.*;
+import com.datastax.driver.mapping.annotations.ClusteringColumn;
+import com.datastax.driver.mapping.annotations.Column;
+import com.datastax.driver.mapping.annotations.Frozen;
+import com.datastax.driver.mapping.annotations.PartitionKey;
+import com.datastax.driver.mapping.annotations.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,5 +48,8 @@ public class Protocol {
 
     @Column(name = "votes_count_per_option")
     private List<Long> votesCountPerOption;
+
+    @Column(name = "cloudinary_cloud_name")
+    private String cloudinaryCloudName;
 
 }

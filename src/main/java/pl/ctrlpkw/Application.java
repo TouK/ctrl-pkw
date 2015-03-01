@@ -1,5 +1,6 @@
 package pl.ctrlpkw;
 
+import com.cloudinary.Cloudinary;
 import com.google.common.cache.CacheBuilder;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.wordnik.swagger.jaxrs.config.BeanConfig;
@@ -41,6 +42,11 @@ public class Application {
         config.setTitle(Application.class.getPackage().getSpecificationTitle());
         config.setScan(true);
         return config;
+    }
+
+    @Bean
+    public Cloudinary cloudinary() {
+        return new Cloudinary("cloudinary://758886455376483:qX-Fe1sr_RLTXToVcsWWI1385zA@ddj4jx8rq");
     }
 
     public static void main(String[] args) {

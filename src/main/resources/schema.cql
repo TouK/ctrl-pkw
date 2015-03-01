@@ -21,5 +21,6 @@ CREATE TABLE protocol (
     votes_cast_count bigint,
     votes_valid_count bigint,
     votes_count_per_option list<bigint>,
+    cloudinary_cloud_name varchar,
     PRIMARY KEY (id, ballot, ward)
 );
