@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.LocalDate;
 import org.springframework.stereotype.Component;
@@ -21,8 +22,10 @@ import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -42,10 +45,10 @@ public class ProtocolsResource {
     
     @ApiOperation("Przesłanie informacji o wynikach głosowania w obwodzie dla wszystkich kart")
     @POST
-    public List<PictureUploadToken> create(@Valid pl.ctrlpkw.api.dto.Protocol protocol) {
+    public List<PictureUploadToken> create(@ApiParam @PathParam("date") String votingDate, @Valid pl.ctrlpkw.api.dto.Protocol protocol) {
         List<PictureUploadToken> result = new LinkedList<>();
         for (BallotResult ballotResult : Optional.fromNullable(protocol.getBallotResults()).or(Lists.<BallotResult>newArrayList())) {
-            UUID uuid = saveBallotLocalResult(protocol.getCommunityCode(), protocol.getWardNo(), ballotResult);
+            UUID uuid = saveBallotLocalResult(LocalDate.parse(votingDate).toDate(), protocol.getCommunityCode(), protocol.getWardNo(), ballotResult);
             result.add(
                     authorizePictureUpload(uuid)
             );
@@ -53,10 +56,10 @@ public class ProtocolsResource {
         return result;
     }
 
-    private UUID saveBallotLocalResult(String communityCode, Integer wardNo, BallotResult ballotResult) {
+    private UUID saveBallotLocalResult(Date votingDate, String communityCode, Integer wardNo, BallotResult ballotResult) {
         Protocol localBallotResult = Protocol.builder()
                 .id(UUID.randomUUID())
-                .ballot(Ballot.builder().votingDate(LocalDate.parse("2010-06-20").toDate()).no(ballotResult.getBallotNo()).build())
+                .ballot(Ballot.builder().votingDate(votingDate).no(ballotResult.getBallotNo()).build())
                 .ward(Ward.builder().communityCode(communityCode).no(wardNo).build())
                 .votersEntitledCount(ballotResult.getVotersEntitledCount())
                 .ballotsGivenCount(ballotResult.getBallotsGivenCount())
