@@ -2,8 +2,7 @@ package pl.ctrlpkw.batch;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import pl.ctrlpkw.model.read.VotingRepository;
-import pl.ctrlpkw.model.read.Ward;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.LocalDate;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -22,10 +21,13 @@ import org.springframework.batch.item.file.transform.FieldSet;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import pl.ctrlpkw.model.read.VotingRepository;
+import pl.ctrlpkw.model.read.Ward;
 
 import javax.annotation.Resource;
 import javax.persistence.EntityManagerFactory;
 
+@Slf4j
 @Configuration
 public class WardsLoadingBatchConfig {
 
@@ -56,10 +58,10 @@ public class WardsLoadingBatchConfig {
             ward.setCommunityCode(item.readString(2));
             ward.setWardNo(item.readInt(6));
             ward.setWardAddress(item.readString(7));
-            if (item.getFieldCount() == 15) {
+            if (item.getFieldCount() >= 15) {
                 ward.setLocation(geometryFactory.createPoint(new Coordinate(
-                        item.readDouble(13),
-                        item.readDouble(14)
+                        item.readDouble(14),
+                        item.readDouble(13)
                 )));
             }
             return ward;
@@ -68,7 +70,7 @@ public class WardsLoadingBatchConfig {
 
     @Bean
     public ItemWriter<Ward> writer(EntityManagerFactory entityManagerFactory) {
-        JpaItemWriter<Ward> writer = new JpaItemWriter<Ward>();
+        JpaItemWriter<Ward> writer = new JpaItemWriter<>();
         writer.setEntityManagerFactory(entityManagerFactory);
         return writer;
     }

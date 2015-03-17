@@ -2,6 +2,7 @@ package pl.ctrlpkw.api.resource;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.joda.time.LocalDate;
@@ -22,8 +23,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import java.util.Collection;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Api("Obwody")
@@ -47,17 +50,23 @@ public class WardsResource {
             @PathParam("date") String votingDate,
             @QueryParam("latitude") @NotNull Double latidude,
             @QueryParam("longitude") @NotNull Double longitude,
-            @QueryParam("count") @DefaultValue("3") short count)
+            @QueryParam("radius") @DefaultValue("4000") double radius,
+            @QueryParam("minCount") @DefaultValue("3") short minCount)
     {
         Voting voting = votingRepository.findByDate(LocalDate.parse(votingDate));
-        return StreamSupport
-                .stream(
-                        wardRepository.findOrderedByDistance(
-                                voting,
-                                geometryFactory.createPoint(new Coordinate(latidude, longitude)),
-                                new PageRequest(0, count)
-                        ).spliterator(),
-                        false)
+        Point location = geometryFactory.createPoint(new Coordinate(longitude, latidude));
+        Collection<Ward> withinRadiusAndOrderByDistance = wardRepository.findWithinRadiusAndOrderByDistance(
+                voting, location, radius
+        );
+        Stream<Ward> resultsStream = StreamSupport.stream(withinRadiusAndOrderByDistance.spliterator(), false);
+        if (minCount > withinRadiusAndOrderByDistance.size()) {
+            resultsStream = Stream.concat(
+                    resultsStream,
+                    StreamSupport.stream(wardRepository.findOrderedByDistance(
+                            voting, location, new PageRequest(0, minCount)
+                    ).spliterator(), false)).skip(withinRadiusAndOrderByDistance.size());
+        }
+        return resultsStream
                 .map(entityToDto)
                 .collect(Collectors.toList());
     }
@@ -68,7 +77,7 @@ public class WardsResource {
                     .no(entity.getWardNo())
                     .address(entity.getWardAddress())
                     .location(entity.getLocation() != null ?
-                            Location.builder().latitude(entity.getLocation().getX()).longitude(entity.getLocation().getY()).build()
+                            Location.builder().latitude(entity.getLocation().getY()).longitude(entity.getLocation().getX()).build()
                             : null
                     )
                     .build();
