@@ -46,7 +46,7 @@ public class Application {
 
     @Bean
     public Cloudinary cloudinary() {
-        return new Cloudinary("cloudinary://758886455376483:qX-Fe1sr_RLTXToVcsWWI1385zA@ddj4jx8rq");
+        return new Cloudinary();
     }
 
     public static void main(String[] args) {

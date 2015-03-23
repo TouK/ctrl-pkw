@@ -8,6 +8,8 @@ import com.google.common.collect.Lists;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.LocalDate;
 import org.springframework.stereotype.Component;
@@ -25,6 +27,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,16 +47,19 @@ public class ProtocolsResource {
     private Cloudinary cloudinary;
     
     @ApiOperation("Przesłanie informacji o wynikach głosowania w obwodzie dla wszystkich kart")
+    @ApiResponses({@ApiResponse(code = 202, message = "Protokół przyjęty do przetważania", response = PictureUploadToken.class)})
     @POST
-    public List<PictureUploadToken> create(@ApiParam @PathParam("date") String votingDate, @Valid pl.ctrlpkw.api.dto.Protocol protocol) {
+    public Response create(@ApiParam @PathParam("date") String votingDate, @Valid pl.ctrlpkw.api.dto.Protocol protocol) {
         List<PictureUploadToken> result = new LinkedList<>();
         for (BallotResult ballotResult : Optional.fromNullable(protocol.getBallotResults()).or(Lists.<BallotResult>newArrayList())) {
             UUID uuid = saveBallotLocalResult(LocalDate.parse(votingDate).toDate(), protocol.getCommunityCode(), protocol.getWardNo(), ballotResult);
-            result.add(
-                    authorizePictureUpload(uuid)
-            );
+            if (cloudinary.config.apiKey != null) {
+                result.add(
+                        authorizePictureUpload(uuid)
+                );
+            }
         }
-        return result;
+        return Response.accepted(result).build();
     }
 
     private UUID saveBallotLocalResult(Date votingDate, String communityCode, Integer wardNo, BallotResult ballotResult) {
@@ -77,7 +83,7 @@ public class ProtocolsResource {
     
     private PictureUploadToken authorizePictureUpload(UUID publicId) {
         
-        int timestamp = (int) (System.currentTimeMillis() / 1000L);;
+        int timestamp = (int) (System.currentTimeMillis() / 1000L);
 
         String signature = cloudinary.apiSignRequest(
                 ImmutableMap.of(
