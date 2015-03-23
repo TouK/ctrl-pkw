@@ -1,9 +1,6 @@
 package pl.ctrlpkw.integrationtest;
 
 import com.google.common.collect.Iterators;
-import pl.ctrlpkw.Application;
-import pl.ctrlpkw.api.dto.Ward;
-import pl.ctrlpkw.model.read.WardRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
+import pl.ctrlpkw.Application;
+import pl.ctrlpkw.api.dto.Ward;
+import pl.ctrlpkw.model.read.WardRepository;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -45,7 +45,7 @@ public class WardsGeolocalizationIT extends EmbeddedCassandraIT {
         //when
         ResponseEntity<Ward[]> closestWards = restTemplate.getForEntity(
                 WARDS_URL, Ward[].class, serverPort, "2010-06-20",
-                Double.toString(ward.getLocation().getX()), Double.toString(ward.getLocation().getY()));
+                Double.toString(ward.getLocation().getY()), Double.toString(ward.getLocation().getX()));
 
         //then
         assertThat(
