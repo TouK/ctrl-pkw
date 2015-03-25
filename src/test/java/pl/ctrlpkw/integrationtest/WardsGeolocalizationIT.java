@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @IntegrationTest({"server.port:0", EmbeddedCassandraIT.CASSANDRA_CONFIG})
 public class WardsGeolocalizationIT extends EmbeddedCassandraIT {
 
-    public static final String WARDS_URL = "http://localhost:{serverPort}/api/votings/{votingDatew}/wards?latitude={latitude}&longitude={longitude}";
+    public static final String WARDS_URL = "http://localhost:{serverPort}/api/votings/{votingDatew}/wards?latitude={latitude}&longitude={longitude}&radius={radius}&minCount={minCount}";
 
     @Value("${local.server.port}")
     private String serverPort;
@@ -53,6 +53,20 @@ public class WardsGeolocalizationIT extends EmbeddedCassandraIT {
                                 ward.getCommunityCode().equals(input.getCommunityCode())
                                         && ward.getWardNo().equals(input.getNo())
                 )).isTrue();
+    }
+
+    @Test
+    public void shouldReturnAllWardsInTheSameLocationEvenWhenAskedForOneClosest() throws InterruptedException {
+        //given
+
+        //when
+        ResponseEntity<Ward[]> closestWards = restTemplate.getForEntity(
+                WARDS_URL, Ward[].class, serverPort,
+                "2010-06-20", Double.toString(52.2159212), Double.toString(20.9678000), 1, 1
+        );
+
+        //then
+        assertThat(closestWards.getBody().length).isEqualTo(2);
     }
 
 }

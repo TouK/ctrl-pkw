@@ -19,5 +19,6 @@ public class Ward {
     private Integer no;
     private String address;
     private Location location;
+    private String label;
 
 }

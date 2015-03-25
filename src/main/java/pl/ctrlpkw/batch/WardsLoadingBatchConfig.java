@@ -58,6 +58,7 @@ public class WardsLoadingBatchConfig {
             ward.setCommunityCode(item.readString(2));
             ward.setWardNo(item.readInt(6));
             ward.setWardAddress(item.readString(7));
+            ward.setLabel("Obwodowa komisja wyborcza: " + item.readString(3).split(",", 2)[0] + " nr " + item.readString(6));
             if (item.getFieldCount() >= 15) {
                 ward.setLocation(geometryFactory.createPoint(new Coordinate(
                         item.readDouble(14),

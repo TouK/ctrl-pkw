@@ -29,4 +29,6 @@ public class Ward {
     @Type(type="org.hibernate.spatial.GeometryType")
     private Point location;
 
+    private String label;
+
 }

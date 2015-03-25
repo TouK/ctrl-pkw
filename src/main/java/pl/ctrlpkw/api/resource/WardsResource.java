@@ -1,5 +1,6 @@
 package pl.ctrlpkw.api.resource;
 
+import com.google.common.collect.Iterables;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
@@ -24,9 +25,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Api("Obwody")
@@ -55,20 +56,31 @@ public class WardsResource {
     {
         Voting voting = votingRepository.findByDate(LocalDate.parse(votingDate));
         Point location = geometryFactory.createPoint(new Coordinate(longitude, latidude));
-        Collection<Ward> withinRadiusAndOrderByDistance = wardRepository.findWithinRadiusAndOrderByDistance(
-                voting, location, radius
-        );
-        Stream<Ward> resultsStream = StreamSupport.stream(withinRadiusAndOrderByDistance.spliterator(), false);
-        if (minCount > withinRadiusAndOrderByDistance.size()) {
-            resultsStream = Stream.concat(
-                    resultsStream,
-                    StreamSupport.stream(wardRepository.findOrderedByDistance(
-                            voting, location, new PageRequest(0, minCount)
-                    ).spliterator(), false)).skip(withinRadiusAndOrderByDistance.size());
-        }
-        return resultsStream
+
+        return StreamSupport.stream(
+                getAllWardsWithinRadiusAndTopUpWithClosestIfAtLeastMinCountNotFound(
+                        voting, location, radius, minCount
+                ).spliterator(), false)
                 .map(entityToDto)
                 .collect(Collectors.toList());
+    }
+
+    private Iterable<Ward> getAllWardsWithinRadiusAndTopUpWithClosestIfAtLeastMinCountNotFound(
+            Voting voting, Point location, double radius, short minCount
+    ) {
+        Collection<Ward> wardsWithinRadius = wardRepository.findWithinRadiusAndOrderByDistance(
+                voting, location, radius
+        );
+        if (minCount <= wardsWithinRadius.size()) {
+            return wardsWithinRadius;
+        } else {
+            List<Ward> closestMinCountWards = wardRepository.findOrderedByDistance(
+                    voting, location, new PageRequest(0, minCount)
+            ).getContent();
+            Point minCountThWardLocation =
+                    Iterables.getLast(closestMinCountWards).getLocation();
+            return wardRepository.findCloserThanAndOrderByDistance(voting, location, minCountThWardLocation);
+        }
     }
 
     private static Function<Ward, pl.ctrlpkw.api.dto.Ward> entityToDto = entity ->
@@ -80,6 +92,7 @@ public class WardsResource {
                             Location.builder().latitude(entity.getLocation().getY()).longitude(entity.getLocation().getX()).build()
                             : null
                     )
+                    .label(entity.getLabel())
                     .build();
 
 }

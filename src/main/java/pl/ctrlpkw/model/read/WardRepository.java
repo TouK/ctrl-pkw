@@ -17,6 +17,9 @@ public interface WardRepository extends PagingAndSortingRepository<Ward, Long> {
     @Query("select w from Ward w where w.location is not null and w.voting = :voting and distance_sphere(w.location, :point) <= :radius order by distance_sphere(w.location, :point)")
     Collection<Ward> findWithinRadiusAndOrderByDistance(@Param("voting") Voting voting, @Param("point") Point point, @Param("radius") double radius);
 
+    @Query("select w from Ward w where w.location is not null and w.voting = :voting and distance_sphere(w.location, :point) <= distance_sphere(:distantPoint, :point) order by distance_sphere(w.location, :point)")
+    Collection<Ward> findCloserThanAndOrderByDistance(@Param("voting") Voting voting, @Param("point") Point point, @Param("distantPoint") Point distantPoint);
+
     Iterable<Ward> findByCommunityCode(String communityCode);
 
 }
