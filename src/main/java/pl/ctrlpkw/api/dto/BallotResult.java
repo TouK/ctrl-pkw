@@ -19,9 +19,6 @@ import java.util.List;
 public class BallotResult {
 
     @NotNull
-    private Integer ballotNo;
-
-    @NotNull
     private Long votersEntitledCount;
 
     @NotNull

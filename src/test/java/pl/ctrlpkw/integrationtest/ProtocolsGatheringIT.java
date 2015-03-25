@@ -2,6 +2,7 @@ package pl.ctrlpkw.integrationtest;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.LocalDate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.batch.item.ExecutionContext;
@@ -37,7 +38,7 @@ import static org.assertj.core.api.Assertions.contentOf;
 @Slf4j
 public class ProtocolsGatheringIT extends EmbeddedCassandraIT {
 
-    public static final String PROTOCOLS_URL = "http://localhost:{port}/api/votings/{votingDate}/protocols";
+    public static final String PROTOCOLS_URL = "http://localhost:{port}/api/protocols";
     public static final String RESULT_URL = "http://localhost:{port}/api/votings/{votingDate}/ballots/{ballotNo}/result";
 
     @Value("${local.server.port}")
@@ -72,16 +73,17 @@ public class ProtocolsGatheringIT extends EmbeddedCassandraIT {
         reader.open(new ExecutionContext());
         for (FieldSet item = reader.read(); item != null; item = reader.read()) {
             Protocol protocol = buildProtocolFromFieldSet(item);
-            restTemplate.postForEntity(PROTOCOLS_URL, protocol, Object.class, serverPort, "2010-06-20");
+            restTemplate.postForEntity(PROTOCOLS_URL, protocol, Object.class, serverPort, "2010-06-20", 1);
         }
     }
 
     protected Protocol buildProtocolFromFieldSet(FieldSet item) {
         return Protocol.builder()
+                .votingDate(LocalDate.parse("2010-06-20"))
+                .ballotNo(1)
                 .communityCode(item.readString(2))
                 .wardNo(item.readInt(6))
-                .ballotResults(Arrays.asList(BallotResult.builder()
-                        .ballotNo(1)
+                .ballotResult(BallotResult.builder()
                         .votersEntitledCount(item.readLong(10))
                         .ballotsGivenCount(item.readLong(11))
                         .votesCastCount(item.readLong(12))
@@ -92,7 +94,7 @@ public class ProtocolsGatheringIT extends EmbeddedCassandraIT {
                                         .map(pos -> item.readLong(13 + pos))
                                         .collect(Collectors.toList())
                         )
-                        .build()))
+                        .build())
                 .build();
     }
 

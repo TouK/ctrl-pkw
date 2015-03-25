@@ -2,9 +2,7 @@ package pl.ctrlpkw.api.resource;
 
 import com.cloudinary.Cloudinary;
 import com.datastax.driver.mapping.Mapper;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -22,19 +20,20 @@ import pl.ctrlpkw.model.write.Ward;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 @Api("Protokoły")
-@Path("/votings/{date}/protocols")
+@Path("/protocols")
 @Produces(MediaType.APPLICATION_JSON)
 @Component
 @Slf4j
@@ -45,35 +44,46 @@ public class ProtocolsResource {
 
     @Resource
     private Cloudinary cloudinary;
-    
+
+    public String getCloudinaryCloudName() {
+        return cloudinary.config.cloudName != null ? cloudinary.config.cloudName : "CLOUDINARY_CLOUD_NAME";
+    }
+
     @ApiOperation("Przesłanie informacji o wynikach głosowania w obwodzie dla wszystkich kart")
     @ApiResponses({@ApiResponse(code = 202, message = "Protokół przyjęty do przetważania", response = PictureUploadToken.class)})
     @POST
-    public Response create(@ApiParam @PathParam("date") String votingDate, @Valid pl.ctrlpkw.api.dto.Protocol protocol) {
+    public Response create(@Valid pl.ctrlpkw.api.dto.Protocol protocol) {
         List<PictureUploadToken> result = new LinkedList<>();
-        for (BallotResult ballotResult : Optional.fromNullable(protocol.getBallotResults()).or(Lists.<BallotResult>newArrayList())) {
-            UUID uuid = saveBallotLocalResult(LocalDate.parse(votingDate).toDate(), protocol.getCommunityCode(), protocol.getWardNo(), ballotResult);
+            UUID uuid = saveProtocol(protocol);
             if (cloudinary.config.apiKey != null) {
                 result.add(
                         authorizePictureUpload(uuid)
                 );
             }
-        }
         return Response.accepted(result).build();
     }
 
-    private UUID saveBallotLocalResult(Date votingDate, String communityCode, Integer wardNo, BallotResult ballotResult) {
+    @ApiOperation("Pobranie przesłanej informacji o wyniku głosowania w obwodzie")
+    @GET
+    @Path("{id}")
+    public pl.ctrlpkw.api.dto.Protocol readOne(@ApiParam @PathParam("id") UUID id) {
+        Mapper<Protocol> mapper = cassandraContext.getMappingManager().mapper(Protocol.class);
+        Protocol protocol = mapper.get(id);
+        return entityToDto.apply(protocol);
+    }
+
+    private UUID saveProtocol(pl.ctrlpkw.api.dto.Protocol protocol) {
         Protocol localBallotResult = Protocol.builder()
                 .id(UUID.randomUUID())
-                .ballot(Ballot.builder().votingDate(votingDate).no(ballotResult.getBallotNo()).build())
-                .ward(Ward.builder().communityCode(communityCode).no(wardNo).build())
-                .votersEntitledCount(ballotResult.getVotersEntitledCount())
-                .ballotsGivenCount(ballotResult.getBallotsGivenCount())
-                .votesCastCount(ballotResult.getVotesCastCount())
-                .votesValidCount(ballotResult.getVotesValidCount())
+                .ballot(Ballot.builder().votingDate(protocol.getVotingDate().toDate()).no(protocol.getBallotNo()).build())
+                .ward(Ward.builder().communityCode(protocol.getCommunityCode()).no(protocol.getWardNo()).build())
+                        .votersEntitledCount(protocol.getBallotResult().getVotersEntitledCount())
+                        .ballotsGivenCount(protocol.getBallotResult().getBallotsGivenCount())
+                        .votesCastCount(protocol.getBallotResult().getVotesCastCount())
+                        .votesValidCount(protocol.getBallotResult().getVotesValidCount())
                 .votesCountPerOption(
-                        ballotResult.getVotesCountPerOption()
-                )
+                        protocol.getBallotResult().getVotesCountPerOption()
+                        )
                 .cloudinaryCloudName(cloudinary.config.cloudName)
                 .build();
         Mapper<Protocol> mapper = cassandraContext.getMappingManager().mapper(Protocol.class);
@@ -99,4 +109,22 @@ public class ProtocolsResource {
                 .signature(signature)
                 .build();
     }
+
+    private static Function<Protocol, pl.ctrlpkw.api.dto.Protocol> entityToDto = entity ->
+            pl.ctrlpkw.api.dto.Protocol.builder()
+                    .id(entity.getId())
+                    .votingDate(LocalDate.fromDateFields(entity.getBallot().getVotingDate()))
+                    .ballotNo(entity.getBallot().getNo())
+                    .communityCode(entity.getWard().getCommunityCode())
+                    .wardNo(entity.getWard().getNo())
+                    .ballotResult(
+                            BallotResult.builder()
+                                    .votersEntitledCount(entity.getVotersEntitledCount())
+                                    .ballotsGivenCount(entity.getBallotsGivenCount())
+                                    .votesCastCount(entity.getVotesCastCount())
+                                    .votesValidCount(entity.getVotesValidCount())
+                                    .votesCountPerOption(entity.getVotesCountPerOption())
+                                    .build()
+                    )
+                    .build();
 }

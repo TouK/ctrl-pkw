@@ -40,7 +40,7 @@ public class BallotsResource {
 
     @ApiOperation(value = "Pobranie konkretnej karty dla podanej daty głosowania", response = Ballot.class)
     @GET
-    @Path("/{no}")
+    @Path("{no}")
     @Transactional
     public Ballot readOne(@PathParam("date") String votingDate, @PathParam("no") Integer ballotNo) {
         return entityToDto.apply(ballotsRepository.findByDateAndNo(LocalDate.parse(votingDate), ballotNo));

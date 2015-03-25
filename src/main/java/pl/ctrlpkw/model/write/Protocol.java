@@ -1,7 +1,6 @@
 package pl.ctrlpkw.model.write;
 
 
-import com.datastax.driver.mapping.annotations.ClusteringColumn;
 import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.Frozen;
 import com.datastax.driver.mapping.annotations.PartitionKey;
@@ -26,11 +25,9 @@ public class Protocol {
     @PartitionKey
     private UUID id;
 
-    @ClusteringColumn(0)
     @Frozen
     private Ballot ballot;
 
-    @ClusteringColumn(1)
     @Frozen
     private Ward ward;
 

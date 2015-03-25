@@ -45,7 +45,7 @@ public class WardsGeolocalizationIT extends EmbeddedCassandraIT {
         //when
         ResponseEntity<Ward[]> closestWards = restTemplate.getForEntity(
                 WARDS_URL, Ward[].class, serverPort, "2010-06-20",
-                Double.toString(ward.getLocation().getY()), Double.toString(ward.getLocation().getX()));
+                Double.toString(ward.getLocation().getY()), Double.toString(ward.getLocation().getX()), 1, 1);
 
         //then
         assertThat(

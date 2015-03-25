@@ -52,7 +52,7 @@ public class ResultsResource {
 
         BallotResult results = StreamSupport.stream(accessor.findByVotingDateAndBallotNo().spliterator(), false)
                 .reduce(identity, accumulator, combiner);
-        results.setBallotNo(ballot.getNo());
+        //results.setBallotNo(ballot.getNo());
         return results;
     }
 
