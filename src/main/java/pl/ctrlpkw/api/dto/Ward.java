@@ -1,6 +1,7 @@
 package pl.ctrlpkw.api.dto;
 
 import com.wordnik.swagger.annotations.ApiModel;
+import com.wordnik.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,5 +21,9 @@ public class Ward {
     private String address;
     private Location location;
     private String label;
+
+    public enum ProtocolStatus { LACK, VAGUE, CONFIRMED };
+    @ApiModelProperty(dataType = "string", allowableValues = "LACK, VAGUE, CONFIRMED")
+    private ProtocolStatus protocolStatus;
 
 }

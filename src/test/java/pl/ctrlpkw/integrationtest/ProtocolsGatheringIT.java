@@ -99,6 +99,7 @@ public class ProtocolsGatheringIT extends EmbeddedCassandraIT {
     }
 
     protected void thenResultsAreSameAsIn2010() {
+        restTemplate.postForObject(RESULT_URL, null, BallotResult.class, serverPort, "2010-06-20", 1);
         BallotResult ballotResult = restTemplate.getForObject(RESULT_URL, BallotResult.class, serverPort, "2010-06-20", 1);
         assertThat(ballotResult.getVotersEntitledCount()).isEqualTo(30813005);
         assertThat(ballotResult.getBallotsGivenCount()).isEqualTo(16929088);

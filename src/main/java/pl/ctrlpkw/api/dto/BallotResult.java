@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.experimental.Builder;
 
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.List;
 
 @ApiModel
@@ -16,7 +17,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BallotResult {
+public class BallotResult implements Serializable {
 
     @NotNull
     private Long votersEntitledCount;

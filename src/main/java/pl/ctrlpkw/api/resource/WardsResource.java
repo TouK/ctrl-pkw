@@ -45,7 +45,7 @@ public class WardsResource {
     @Resource
     private VotingRepository votingRepository;
 
-    @ApiOperation("Pobranie obwodów, których lokale wyborcze są nabliższe podanej lokalizacji")
+    @ApiOperation(value = "Pobranie obwodów, których lokale wyborcze są nabliższe podanej lokalizacji", response = pl.ctrlpkw.api.dto.Ward.class, responseContainer = "List")
     @GET
     public Iterable<pl.ctrlpkw.api.dto.Ward> readByClosestLocation(
             @PathParam("date") String votingDate,
@@ -93,6 +93,7 @@ public class WardsResource {
                             : null
                     )
                     .label(entity.getLabel())
+                    .protocolStatus(pl.ctrlpkw.api.dto.Ward.ProtocolStatus.LACK)
                     .build();
 
 }

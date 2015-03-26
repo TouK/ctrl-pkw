@@ -24,3 +24,5 @@ CREATE TABLE protocol (
     cloudinary_cloud_name varchar,
     PRIMARY KEY (id)
 );
+
+CREATE INDEX ballot_idx ON protocol (ballot) ;
