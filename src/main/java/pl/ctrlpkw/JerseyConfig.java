@@ -1,5 +1,6 @@
 package pl.ctrlpkw;
 
+import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ public class JerseyConfig extends ResourceConfig {
         register(ObjectMapperProvider.class);
 
         //Declarative linking need the patched version of Jersey
-        //register(DeclarativeLinkingFeature.class);
+        register(DeclarativeLinkingFeature.class);
 
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
     }
