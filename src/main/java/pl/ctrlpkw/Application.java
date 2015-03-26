@@ -11,6 +11,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.guava.GuavaCacheManager;
 import org.springframework.context.annotation.Bean;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import javax.ws.rs.ApplicationPath;
 import java.util.concurrent.TimeUnit;
@@ -47,6 +48,11 @@ public class Application {
     @Bean
     public Cloudinary cloudinary() {
         return new Cloudinary();
+    }
+
+    @Bean
+    public LocalValidatorFactoryBean validator() {
+        return new LocalValidatorFactoryBean();
     }
 
     public static void main(String[] args) {

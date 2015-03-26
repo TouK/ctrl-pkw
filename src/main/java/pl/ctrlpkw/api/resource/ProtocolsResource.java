@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.LocalDate;
 import org.springframework.stereotype.Component;
 import pl.ctrlpkw.CassandraContext;
+import pl.ctrlpkw.api.constraint.VotesCountValid;
 import pl.ctrlpkw.api.dto.BallotResult;
 import pl.ctrlpkw.api.dto.PictureUploadToken;
 import pl.ctrlpkw.model.write.Ballot;
@@ -27,8 +28,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -52,15 +51,14 @@ public class ProtocolsResource {
     @ApiOperation("Przesłanie informacji o wynikach głosowania w obwodzie dla wszystkich kart")
     @ApiResponses({@ApiResponse(code = 202, message = "Protokół przyjęty do przetważania", response = PictureUploadToken.class)})
     @POST
-    public Response create(@Valid pl.ctrlpkw.api.dto.Protocol protocol) {
-        List<PictureUploadToken> result = new LinkedList<>();
-            UUID uuid = saveProtocol(protocol);
-            if (cloudinary.config.apiKey != null) {
-                result.add(
-                        authorizePictureUpload(uuid)
-                );
-            }
-        return Response.accepted(result).build();
+    public Response create(@Valid @VotesCountValid pl.ctrlpkw.api.dto.Protocol protocol) {
+        UUID uuid = saveProtocol(protocol);
+        if (cloudinary.config.apiKey != null) {
+            return Response.accepted(authorizePictureUpload(uuid)).build();
+        } else {
+            log.debug("No Cloudinary comnfiguration");
+            return Response.accepted().build();
+        }
     }
 
     @ApiOperation("Pobranie przesłanej informacji o wyniku głosowania w obwodzie")
