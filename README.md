@@ -20,3 +20,16 @@ W tej chwili w aplikacji wpisane są współrzędne prawie 80% lokali wyborczych
 Do uruchomienia aplikacji potrzebna jest zainstalowana baza Apache Cassandra.
 Na Ubuntu instaluje się ja tak:
 http://www.datastax.com/documentation/cassandra/2.1/cassandra/install/installDeb_t.html
+```bash
+$ sudo docker pull touk/ctrl-pkw
+$ sudo docker run \
+-e STORMPATH_API_KEY_ID=? \
+-e STORMPATH_API_KEY_SECRET=? \
+-e SPRING_REDIS_HOST=? \
+-e SPRING_REDIS_PASSWORD=? \
+-e SPRING_REDIS_PORT=? \
+-e CASSANDRA_CONTACTPOINT=? \
+-e CASSANDRA_PORT=? \
+--net="host" \
+touk/ctrl-pkw
+```
