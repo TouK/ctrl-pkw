@@ -8,7 +8,8 @@ import org.hibernate.annotations.Type;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.ManyToMany;
+import java.util.Collection;
 
 @Entity
 @Getter
@@ -19,8 +20,8 @@ public class Ward {
     @GeneratedValue
     private Long id;
 
-    @ManyToOne(targetEntity = Voting.class, optional = false)
-    private Voting voting;
+    @ManyToMany(targetEntity = Voting.class)
+    private Collection<Voting> votings;
 
     private String communityCode;
     private Integer wardNo;

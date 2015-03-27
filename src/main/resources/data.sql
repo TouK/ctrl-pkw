@@ -1,14 +1,29 @@
-INSERT INTO voting(id, voting_date, description) values (1, DATE '2010-06-20', 'Wybory na Prezydenta Rzeczypospolitej Polskiej');
+INSERT INTO voting(id, voting_date, description) values (1, DATE '2010-06-20', 'Wybory na Prezydenta Rzeczypospolitej Polskiej (test na podstawie danych z 2010r)');
 
-INSERT INTO ballot(id, voting_id, no, question) values (1, 1, 1, 'Lista kandydatów na Prezydenta Rzeczypospolitej Polskiej');
+INSERT INTO ballot(id, voting_id, no, question) values (11, 1, 1, 'Lista kandydatów na Prezydenta Rzeczypospolitej Polskiej');
 
-INSERT INTO ballot_option(id, ballot_id, no, description) values(1, 1, 1, 'JUREK Marek');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(2, 1, 2, 'KACZYŃSKI Jarosław Aleksander');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(3, 1, 3, 'KOMOROWSKI Bronisław Maria');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(4, 1, 4, 'KORWIN-MIKKE Janusz Ryszard');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(5, 1, 5, 'LEPPER Andrzej Zbigniew');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(6, 1, 6, 'MORAWIECKI Kornel Andrzej');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(7, 1, 7, 'NAPIERALSKI Grzegorz Bernard');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(8, 1, 8, 'OLECHOWSKI Andrzej Marian');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(9, 1, 9, 'PAWLAK Waldemar');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(10, 1, 10, 'ZIĘTEK Bogusław Zbigniew');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(111, 11, 1, 'JUREK Marek');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(112, 11, 2, 'KACZYŃSKI Jarosław Aleksander');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(113, 11, 3, 'KOMOROWSKI Bronisław Maria');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(114, 11, 4, 'KORWIN-MIKKE Janusz Ryszard');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(115, 11, 5, 'LEPPER Andrzej Zbigniew');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(116, 11, 6, 'MORAWIECKI Kornel Andrzej');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(117, 11, 7, 'NAPIERALSKI Grzegorz Bernard');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(118, 11, 8, 'OLECHOWSKI Andrzej Marian');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(119, 11, 9, 'PAWLAK Waldemar');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(110, 11, 10, 'ZIĘTEK Bogusław Zbigniew');
+
+INSERT INTO voting(id, voting_date, description) values (2, DATE '2015-05-10', 'Wybory na Prezydenta Rzeczypospolitej Polskiej (1. głosowanie)');
+
+INSERT INTO ballot(id, voting_id, no, question) values (21, 2, 1, 'Lista kandydatów na Prezydenta Rzeczypospolitej Polskiej');
+
+INSERT INTO ballot_option(id, ballot_id, no, description) values(211, 21, 1, 'KORWIN-MIKKE Janusz Ryszard');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(212, 21, 2, 'KOMOROWSKI Bronisław Maria');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(213, 21, 3, 'JARUBAS Adam Sebastian');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(214, 21, 4, 'KUKIZ Paweł Piotr');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(215, 21, 5, 'WILK Jacek');
+
+INSERT INTO voting(id, voting_date, description) values (3, DATE '2015-05-24', 'Wybory na Prezydenta Rzeczypospolitej Polskiej (2. głosowanie)');
+
+INSERT INTO ballot(id, voting_id, no, question) values (31, 3, 1, 'Lista kandydatów na Prezydenta Rzeczypospolitej Polskiej');
+

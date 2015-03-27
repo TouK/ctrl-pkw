@@ -1,5 +1,6 @@
 package pl.ctrlpkw.batch;
 
+import com.google.common.collect.Lists;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import pl.ctrlpkw.model.read.Ward;
 
 import javax.annotation.Resource;
 import javax.persistence.EntityManagerFactory;
+import java.util.Arrays;
 
 @Slf4j
 @Configuration
@@ -38,7 +40,7 @@ public class WardsLoadingBatchConfig {
     private VotingRepository votingRepository;
 
     @Bean
-    public ItemReader<FieldSet> reader() {
+    public ItemReader<FieldSet> wards2010Reader() {
         FlatFileItemReader<FieldSet> reader = new FlatFileItemReader<>();
         reader.setResource(new ClassPathResource("pzt2010-obwody.csv"));
         reader.setEncoding("Cp1250");
@@ -51,10 +53,12 @@ public class WardsLoadingBatchConfig {
     }
 
     @Bean
-    public ItemProcessor<FieldSet, Ward> processor() {
+    public ItemProcessor<FieldSet, Ward> wards2010Processor() {
         return item -> {
             Ward ward = new Ward();
-            ward.setVoting(votingRepository.findByDate(LocalDate.parse("2010-06-20")));
+            ward.setVotings(Lists.newArrayList(
+                    votingRepository.findByDate(Arrays.asList(LocalDate.parse("2010-06-20")))
+            ));
             ward.setCommunityCode(item.readString(2));
             ward.setWardNo(item.readInt(6));
             ward.setWardAddress(item.readString(7));
@@ -70,31 +74,82 @@ public class WardsLoadingBatchConfig {
     }
 
     @Bean
-    public ItemWriter<Ward> writer(EntityManagerFactory entityManagerFactory) {
+    public ItemWriter<Ward> wards2010Writer(EntityManagerFactory entityManagerFactory) {
         JpaItemWriter<Ward> writer = new JpaItemWriter<>();
         writer.setEntityManagerFactory(entityManagerFactory);
         return writer;
     }
 
     @Bean
-    public Job importWardsJob(JobBuilderFactory jobs, Step s1) {
-        return jobs.get("importWards")
-                .incrementer(new RunIdIncrementer())
-                .flow(s1)
-                .end()
+    public Step stepWards2010(StepBuilderFactory stepBuilderFactory, ItemReader<FieldSet> wards2010Reader,
+                      ItemProcessor<FieldSet, Ward> wards2010Processor, ItemWriter<Ward> wards2010Writer) {
+        return stepBuilderFactory.get("wards2010")
+                .<FieldSet, Ward> chunk(1000)
+                .reader(wards2010Reader)
+                .processor(wards2010Processor)
+                .writer(wards2010Writer)
                 .build();
     }
 
     @Bean
-    public Step step1(StepBuilderFactory stepBuilderFactory, ItemReader<FieldSet> reader,
-                      ItemProcessor<FieldSet, Ward> processor, ItemWriter<Ward> writer) {
-        return stepBuilderFactory.get("step1")
+    public ItemReader<FieldSet> wards2015Reader() {
+        FlatFileItemReader<FieldSet> reader = new FlatFileItemReader<>();
+        reader.setResource(new ClassPathResource("obwody-2014-11-15-18-00-27.csv"));
+        reader.setEncoding("Cp1250");
+        reader.setLinesToSkip(1);
+        reader.setLineMapper(new DefaultLineMapper<FieldSet>() {{
+            setLineTokenizer(new DelimitedLineTokenizer(";"));
+            setFieldSetMapper(new PassThroughFieldSetMapper());
+        }});
+        return reader;
+    }
+
+    @Bean
+    public ItemProcessor<FieldSet, Ward> wards2015Processor() {
+        return item -> {
+            Ward ward = new Ward();
+            ward.setVotings(Lists.newArrayList(votingRepository.findByDate(
+                    Arrays.asList(LocalDate.parse("2015-05-10"), LocalDate.parse("2015-05-24"))
+            )));
+            ward.setCommunityCode(item.readString(2).substring(2,8));
+            ward.setWardNo(item.readInt(5));
+            ward.setWardAddress(item.readString(6));
+            ward.setLabel("Obwodowa komisja wyborcza: " + item.readString(3).split(",", 2)[0] + " nr " + item.readString(5));
+            if (item.getFieldCount() >= 12) {
+                ward.setLocation(geometryFactory.createPoint(new Coordinate(
+                        item.readDouble(11),
+                        item.readDouble(10)
+                )));
+            }
+            return ward;
+        };
+    }
+
+    @Bean
+    public ItemWriter<Ward> wards2015Writer(EntityManagerFactory entityManagerFactory) {
+        JpaItemWriter<Ward> writer = new JpaItemWriter<>();
+        writer.setEntityManagerFactory(entityManagerFactory);
+        return writer;
+    }
+
+    @Bean
+    public Step stepWards2015(StepBuilderFactory stepBuilderFactory, ItemReader<FieldSet> wards2015Reader,
+                              ItemProcessor<FieldSet, Ward> wards2015Processor, ItemWriter<Ward> wards2015Writer) {
+        return stepBuilderFactory.get("wards2015")
                 .<FieldSet, Ward> chunk(1000)
-                .reader(reader)
-                .processor(processor)
-                .writer(writer)
+                .reader(wards2015Reader)
+                .processor(wards2015Processor)
+                .writer(wards2015Writer)
                 .build();
     }
 
+    @Bean
+    public Job importWardsJob(JobBuilderFactory jobs, Step stepWards2010, Step stepWards2015) {
+        return jobs.get("importWards")
+                .incrementer(new RunIdIncrementer())
+                .flow(stepWards2010).next(stepWards2015)
+                .end()
+                .build();
+    }
 
 }

@@ -1,5 +1,5 @@
 DROP KEYSPACE IF EXISTS ctrl_pkw;
-CREATE KEYSPACE ctrl_pkw WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1 };
+CREATE KEYSPACE ctrl_pkw WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 2 };
 USE ctrl_pkw;
 
 CREATE TYPE ballot (

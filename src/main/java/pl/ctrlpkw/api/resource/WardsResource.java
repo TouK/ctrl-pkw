@@ -19,6 +19,7 @@ import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -77,6 +78,9 @@ public class WardsResource {
             List<Ward> closestMinCountWards = wardRepository.findOrderedByDistance(
                     voting, location, new PageRequest(0, minCount)
             ).getContent();
+            if (closestMinCountWards.size() == 0) {
+                throw new NotFoundException();
+            }
             Point minCountThWardLocation =
                     Iterables.getLast(closestMinCountWards).getLocation();
             return wardRepository.findCloserThanAndOrderByDistance(voting, location, minCountThWardLocation);
