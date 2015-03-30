@@ -9,6 +9,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.net.InetAddress;
+
 @Component
 public class CassandraContext implements InitializingBean, DisposableBean {
 
@@ -24,12 +26,9 @@ public class CassandraContext implements InitializingBean, DisposableBean {
     @Value("${cassandra.contactPoint}")
     private String contactPoint;
 
-    @Value("${cassandra.port}")
-    private int port;
-
     @Override
     public void afterPropertiesSet() throws Exception {
-        cluster = Cluster.builder().addContactPoint(contactPoint).withPort(port).build();
+        cluster = Cluster.builder().addContactPoints(InetAddress.getAllByName(contactPoint)).build();
         session = cluster.connect();
         mappingManager = new MappingManager(session);
     }

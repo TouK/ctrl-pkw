@@ -29,7 +29,6 @@ $ sudo docker run \
 -e SPRING_REDIS_PASSWORD=? \
 -e SPRING_REDIS_PORT=? \
 -e CASSANDRA_CONTACTPOINT=? \
--e CASSANDRA_PORT=? \
 --net="host" \
 touk/ctrl-pkw
 ```
