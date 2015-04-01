@@ -78,7 +78,6 @@ dependencies {
     
     compile("com.cloudinary:cloudinary-http42:1.1.3")
     compile("com.stormpath.spring:spring-boot-starter-stormpath:1.0.RC4-SNAPSHOT")
-    compile("com.stormpath.spring:spring-boot-starter-stormpath-web:1.0.RC4-SNAPSHOT")
     compile("com.stormpath.spring:spring-boot-starter-stormpath-thymeleaf:1.0.RC4-SNAPSHOT")
 
     compile "org.springframework.data:spring-data-redis:1.4.1.RELEASE"
