@@ -5,6 +5,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import org.joda.time.LocalDate;
 import org.springframework.stereotype.Component;
 import pl.ctrlpkw.api.dto.Ballot;
+import pl.ctrlpkw.api.filter.ClientVersionCheck;
 import pl.ctrlpkw.model.read.BallotOption;
 import pl.ctrlpkw.model.read.BallotsRepository;
 
@@ -24,6 +25,7 @@ import java.util.stream.StreamSupport;
 @Path("/votings/{date}/ballots")
 @Produces(MediaType.APPLICATION_JSON)
 @Component
+@ClientVersionCheck
 public class BallotsResource {
 
     @Resource

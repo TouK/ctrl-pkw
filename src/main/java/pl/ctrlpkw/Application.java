@@ -5,7 +5,9 @@ import com.google.common.cache.CacheBuilder;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.wordnik.swagger.jaxrs.config.BeanConfig;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.CacheManager;
@@ -31,6 +33,11 @@ public class Application {
     @Bean
     public GeometryFactory geometryFactory() {
         return new GeometryFactory();
+    }
+
+    @Bean
+    public ComparableVersion requiredClientVersion(@Value("${api.client.requiredVersion}") String value) {
+        return new ComparableVersion(value);
     }
 
     @Bean

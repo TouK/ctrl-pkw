@@ -8,6 +8,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
+import com.wordnik.swagger.annotations.Authorization;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.LocalDate;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,8 @@ import pl.ctrlpkw.CassandraContext;
 import pl.ctrlpkw.api.constraint.VotesCountValid;
 import pl.ctrlpkw.api.dto.BallotResult;
 import pl.ctrlpkw.api.dto.PictureUploadToken;
+import pl.ctrlpkw.api.filter.AuthorizationRequired;
+import pl.ctrlpkw.api.filter.ClientVersionCheck;
 import pl.ctrlpkw.model.write.Ballot;
 import pl.ctrlpkw.model.write.Protocol;
 import pl.ctrlpkw.model.write.Ward;
@@ -36,6 +39,7 @@ import java.util.function.Function;
 @Produces(MediaType.APPLICATION_JSON)
 @Component
 @Slf4j
+@ClientVersionCheck
 public class ProtocolsResource {
 
     @Resource
@@ -68,6 +72,20 @@ public class ProtocolsResource {
         Mapper<Protocol> mapper = cassandraContext.getMappingManager().mapper(Protocol.class);
         Protocol protocol = mapper.get(id);
         return entityToDto.apply(protocol);
+    }
+
+    @ApiOperation(value = "", authorizations = @Authorization("oauth2"))
+    @POST
+    @Path("{id}/approval")
+    @AuthorizationRequired
+    public void approve(@ApiParam @PathParam("id") UUID id) {
+    }
+
+    @ApiOperation(value = "", authorizations = @Authorization("oauth2"))
+    @POST
+    @Path("{id}/deprecation")
+    @AuthorizationRequired
+    public void deprecate(@ApiParam @PathParam("id") UUID id) {
     }
 
     private UUID saveProtocol(pl.ctrlpkw.api.dto.Protocol protocol) {

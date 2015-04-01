@@ -14,6 +14,7 @@ public class JerseyConfig extends ResourceConfig {
 
     public JerseyConfig() {
         packages("pl.ctrlpkw.api.resource");
+        packages("pl.ctrlpkw.api.filter");
         packages("com.wordnik.swagger.jersey.listing");
         register(ObjectMapperProvider.class);
 

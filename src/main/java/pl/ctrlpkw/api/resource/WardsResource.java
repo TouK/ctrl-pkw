@@ -10,6 +10,7 @@ import org.joda.time.LocalDate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import pl.ctrlpkw.api.dto.Location;
+import pl.ctrlpkw.api.filter.ClientVersionCheck;
 import pl.ctrlpkw.model.read.Voting;
 import pl.ctrlpkw.model.read.VotingRepository;
 import pl.ctrlpkw.model.read.Ward;
@@ -35,6 +36,7 @@ import java.util.stream.StreamSupport;
 @Path("/votings/{date}/wards")
 @Produces(MediaType.APPLICATION_JSON)
 @Component
+@ClientVersionCheck
 public class WardsResource {
 
     @Resource

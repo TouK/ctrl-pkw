@@ -7,6 +7,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import pl.ctrlpkw.api.dto.BallotResult;
+import pl.ctrlpkw.api.filter.ClientVersionCheck;
 import pl.ctrlpkw.model.read.Ballot;
 import pl.ctrlpkw.model.read.BallotsRepository;
 import pl.ctrlpkw.service.VotesCountingService;
@@ -26,6 +27,7 @@ import javax.ws.rs.core.MediaType;
 @Path("/votings/{date}/ballots/{ballotNo}/result")
 @Produces(MediaType.APPLICATION_JSON)
 @Component
+@ClientVersionCheck
 public class ResultsResource {
 
     @Resource
