@@ -22,7 +22,14 @@ CREATE TABLE protocol (
     votes_valid_count bigint,
     votes_count_per_option list<bigint>,
     cloudinary_cloud_name varchar,
+    comment varchar,
     PRIMARY KEY (id)
 );
 
 CREATE INDEX ballot_idx ON protocol (ballot) ;
+
+CREATE TABLE protocol_verification (
+    id uuid,
+    result varchar,
+    PRIMARY KEY (id)
+);

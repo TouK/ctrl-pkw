@@ -20,10 +20,12 @@ import pl.ctrlpkw.api.filter.AuthorizationRequired;
 import pl.ctrlpkw.api.filter.ClientVersionCheck;
 import pl.ctrlpkw.model.write.Ballot;
 import pl.ctrlpkw.model.write.Protocol;
+import pl.ctrlpkw.model.write.ProtocolVerification;
 import pl.ctrlpkw.model.write.Ward;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -34,7 +36,7 @@ import javax.ws.rs.core.Response;
 import java.util.UUID;
 import java.util.function.Function;
 
-@Api("Protokoły")
+@Api("Protokoly")
 @Path("/protocols")
 @Produces(MediaType.APPLICATION_JSON)
 @Component
@@ -76,16 +78,11 @@ public class ProtocolsResource {
 
     @ApiOperation(value = "", authorizations = @Authorization("oauth2"))
     @POST
-    @Path("{id}/approval")
+    @Path("{id}/verifications")
     @AuthorizationRequired
-    public void approve(@ApiParam @PathParam("id") UUID id) {
-    }
-
-    @ApiOperation(value = "", authorizations = @Authorization("oauth2"))
-    @POST
-    @Path("{id}/deprecation")
-    @AuthorizationRequired
-    public void deprecate(@ApiParam @PathParam("id") UUID id) {
+    public void verify(@ApiParam @PathParam("id") UUID id, @ApiParam(required = true) @NotNull ProtocolVerification.Result result) {
+        Mapper<ProtocolVerification> mapper = cassandraContext.getMappingManager().mapper(ProtocolVerification.class);
+        mapper.save(ProtocolVerification.builder().id(id).result(result).build());
     }
 
     private UUID saveProtocol(pl.ctrlpkw.api.dto.Protocol protocol) {

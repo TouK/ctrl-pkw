@@ -49,4 +49,7 @@ public class Protocol {
     @Column(name = "cloudinary_cloud_name")
     private String cloudinaryCloudName;
 
+    @Column(name = "comment")
+    private String comment;
+
 }

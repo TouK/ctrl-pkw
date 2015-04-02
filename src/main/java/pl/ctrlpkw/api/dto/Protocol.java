@@ -47,6 +47,8 @@ public class Protocol {
     @Valid
     private BallotResult ballotResult;
 
+    private String comment;
+
     @ApiModelProperty(hidden = true)
     @InjectLinks({
             @InjectLink(resource = ProtocolsResource.class, rel = "self", method = "readOne", style = InjectLink.Style.ABSOLUTE),
