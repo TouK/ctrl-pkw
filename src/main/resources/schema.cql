@@ -23,13 +23,13 @@ CREATE TABLE protocol (
     votes_count_per_option list<bigint>,
     cloudinary_cloud_name varchar,
     comment varchar,
-    PRIMARY KEY (id)
+    is_verified boolean,
+    approvals set<varchar>,
+    deprecations set<varchar>,
+    client_id varchar,
+    PRIMARY KEY ((ward, ballot), id)
 );
 
-CREATE INDEX ballot_idx ON protocol (ballot) ;
-
-CREATE TABLE protocol_verification (
-    id uuid,
-    result varchar,
-    PRIMARY KEY (id)
-);
+CREATE INDEX protocol_id_idx ON protocol (id) ;
+CREATE INDEX protocol_ballot_idx ON protocol (ballot) ;
+CREATE INDEX protocol_is_verified_idx ON protocol (is_verified) ;

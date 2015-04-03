@@ -1,5 +1,6 @@
 package pl.ctrlpkw;
 
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.linking.DeclarativeLinkingFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
@@ -17,6 +18,7 @@ public class JerseyConfig extends ResourceConfig {
         packages("pl.ctrlpkw.api.filter");
         packages("com.wordnik.swagger.jersey.listing");
         register(ObjectMapperProvider.class);
+        register(JacksonFeature.class);
 
         //Declarative linking need the patched version of Jersey
         register(DeclarativeLinkingFeature.class);

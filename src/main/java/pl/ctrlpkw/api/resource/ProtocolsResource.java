@@ -2,7 +2,11 @@ package pl.ctrlpkw.api.resource;
 
 import com.cloudinary.Cloudinary;
 import com.datastax.driver.mapping.Mapper;
+import com.datastax.driver.mapping.Result;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
+import com.stormpath.sdk.account.Account;
+import com.stormpath.sdk.servlet.account.AccountResolver;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -20,21 +24,28 @@ import pl.ctrlpkw.api.filter.AuthorizationRequired;
 import pl.ctrlpkw.api.filter.ClientVersionCheck;
 import pl.ctrlpkw.model.write.Ballot;
 import pl.ctrlpkw.model.write.Protocol;
-import pl.ctrlpkw.model.write.ProtocolVerification;
+import pl.ctrlpkw.model.write.ProtocolAccessor;
 import pl.ctrlpkw.model.write.Ward;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Api("Protokoly")
 @Path("/protocols")
@@ -67,22 +78,50 @@ public class ProtocolsResource {
         }
     }
 
+    @ApiOperation("")
+    @GET
+    public Iterable<pl.ctrlpkw.api.dto.Protocol> readSome(@QueryParam("count") @DefaultValue("5") int count) {
+        ProtocolAccessor protocolAccessor = cassandraContext.getMappingManager().createAccessor(ProtocolAccessor.class);
+        Result<Protocol> protocols = protocolAccessor.findNotVerified(count);
+        return StreamSupport.stream(protocols.spliterator(), false)
+                .map(entityToDto)
+                .collect(Collectors.toList());
+    }
+
     @ApiOperation("Pobranie przesłanej informacji o wyniku głosowania w obwodzie")
     @GET
     @Path("{id}")
     public pl.ctrlpkw.api.dto.Protocol readOne(@ApiParam @PathParam("id") UUID id) {
-        Mapper<Protocol> mapper = cassandraContext.getMappingManager().mapper(Protocol.class);
-        Protocol protocol = mapper.get(id);
+        ProtocolAccessor protocolAccessor = cassandraContext.getMappingManager().createAccessor(ProtocolAccessor.class);
+        Protocol protocol = protocolAccessor.findById(id);
         return entityToDto.apply(protocol);
     }
+
+
+    public enum VerificationResult { APPROVAL, DEPRECATION }
 
     @ApiOperation(value = "", authorizations = @Authorization("oauth2"))
     @POST
     @Path("{id}/verifications")
     @AuthorizationRequired
-    public void verify(@ApiParam @PathParam("id") UUID id, @ApiParam(required = true) @NotNull ProtocolVerification.Result result) {
-        Mapper<ProtocolVerification> mapper = cassandraContext.getMappingManager().mapper(ProtocolVerification.class);
-        mapper.save(ProtocolVerification.builder().id(id).result(result).build());
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response verify(@Context HttpServletRequest servletRequest, @ApiParam @PathParam("id") UUID id, @ApiParam(required = true, allowableValues = "\"APPROVAL\", \"DEPRECATION\"") @NotNull VerificationResult result) {
+        Account account = AccountResolver.INSTANCE.getAccount(servletRequest);
+        ProtocolAccessor protocolAccessor = cassandraContext.getMappingManager().createAccessor(ProtocolAccessor.class);
+        Protocol protocol = protocolAccessor.findById(id);
+        if (protocol == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        switch (VerificationResult.valueOf(String.valueOf(result))) {
+            case APPROVAL:
+                protocolAccessor.addApproval(protocol.getWard(), protocol.getBallot(), id, Sets.newHashSet(account.getUsername()));
+                return Response.accepted().build();
+            case DEPRECATION:
+                protocolAccessor.addDeprecation(protocol.getWard(), protocol.getBallot(), id, Sets.newHashSet(account.getUsername()));
+                return Response.accepted().build();
+        }
+        return Response.status(Response.Status.BAD_REQUEST).build();
     }
 
     private UUID saveProtocol(pl.ctrlpkw.api.dto.Protocol protocol) {
@@ -96,8 +135,10 @@ public class ProtocolsResource {
                         .votesValidCount(protocol.getBallotResult().getVotesValidCount())
                 .votesCountPerOption(
                         protocol.getBallotResult().getVotesCountPerOption()
-                        )
+                )
                 .cloudinaryCloudName(cloudinary.config.cloudName)
+                .comment(protocol.getComment())
+                .isVerified(false)
                 .build();
         Mapper<Protocol> mapper = cassandraContext.getMappingManager().mapper(Protocol.class);
         mapper.save(localBallotResult);
@@ -139,5 +180,6 @@ public class ProtocolsResource {
                                     .votesCountPerOption(entity.getVotesCountPerOption())
                                     .build()
                     )
+                    .comment(entity.getComment())
                     .build();
 }

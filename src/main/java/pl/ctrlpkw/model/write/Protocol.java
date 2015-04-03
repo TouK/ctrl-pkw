@@ -1,6 +1,7 @@
 package pl.ctrlpkw.model.write;
 
 
+import com.datastax.driver.mapping.annotations.ClusteringColumn;
 import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.Frozen;
 import com.datastax.driver.mapping.annotations.PartitionKey;
@@ -12,6 +13,7 @@ import lombok.Setter;
 import lombok.experimental.Builder;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Table(keyspace = "ctrl_pkw", name="protocol")
@@ -22,12 +24,15 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Protocol {
 
-    @PartitionKey
+
+    @ClusteringColumn
     private UUID id;
 
+    @PartitionKey(1)
     @Frozen
     private Ballot ballot;
 
+    @PartitionKey(0)
     @Frozen
     private Ward ward;
 
@@ -51,5 +56,14 @@ public class Protocol {
 
     @Column(name = "comment")
     private String comment;
+
+    @Column(name = "is_verified")
+    private Boolean isVerified = false;
+
+    @Column(name = "approvals")
+    private Set<String> approvals;
+
+    @Column(name = "deprecations")
+    private Set<String> deprecations;
 
 }
