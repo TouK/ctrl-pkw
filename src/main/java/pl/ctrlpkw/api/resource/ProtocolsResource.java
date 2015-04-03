@@ -53,7 +53,7 @@ public class ProtocolsResource {
     }
 
     @ApiOperation("Przesłanie informacji o wynikach głosowania w obwodzie dla wszystkich kart")
-    @ApiResponses({@ApiResponse(code = 202, message = "Protokół przyjęty do przetważania", response = PictureUploadToken.class)})
+    @ApiResponses({@ApiResponse(code = 202, message = "Protokół przyjęty do przetwarzania", response = PictureUploadToken.class)})
     @POST
     public Response create(@Valid @VotesCountValid pl.ctrlpkw.api.dto.Protocol protocol) {
         UUID uuid = saveProtocol(protocol);
