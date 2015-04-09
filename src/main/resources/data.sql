@@ -21,7 +21,13 @@ INSERT INTO ballot_option(id, ballot_id, no, description) values(211, 21, 1, 'KO
 INSERT INTO ballot_option(id, ballot_id, no, description) values(212, 21, 2, 'KOMOROWSKI Bronisław Maria');
 INSERT INTO ballot_option(id, ballot_id, no, description) values(213, 21, 3, 'JARUBAS Adam Sebastian');
 INSERT INTO ballot_option(id, ballot_id, no, description) values(214, 21, 4, 'KUKIZ Paweł Piotr');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(215, 21, 5, 'WILK Jacek');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(215, 21, 5, 'KOWALSKI Marian Janusz');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(216, 21, 6, 'WILK Jacek');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(217, 21, 7, 'DUDA Andrzej Sebastian');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(218, 21, 8, 'PALIKOT Janusz Marian');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(219, 21, 9, 'OGÓREK Magdalena Agnieszka');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(220, 21, 10, 'TANAJNO Paweł Jan');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(221, 21, 11, 'BRAUN Grzegorz Michał');
 
 INSERT INTO voting(id, voting_date, description) values (3, DATE '2015-05-24', 'Wybory na Prezydenta Rzeczypospolitej Polskiej (2. głosowanie)');
 
