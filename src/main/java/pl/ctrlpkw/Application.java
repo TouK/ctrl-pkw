@@ -26,6 +26,8 @@ import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import pl.ctrlpkw.service.FirstProtocol;
+import pl.ctrlpkw.service.ProtocolSelectorStrategy;
 
 import javax.ws.rs.ApplicationPath;
 import java.util.Arrays;
@@ -37,6 +39,11 @@ import java.util.concurrent.TimeUnit;
 @EnableBatchProcessing
 @Slf4j
 public class Application {
+
+    @Bean
+    public ProtocolSelectorStrategy protocolSelectorStrategy() {
+        return new FirstProtocol();
+    }
 
     @Bean
     public GeometryFactory geometryFactory() {

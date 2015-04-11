@@ -13,8 +13,15 @@ buildscript {
     }
 }
 
-apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'groovy'
 apply plugin: 'spring-boot'
+
+
+run {
+    jvmArgs = ['-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005']
+}
+
 
 jar {
     baseName = 'ctrl-pkw'
@@ -46,6 +53,11 @@ repositories {
     maven { url "http://www.hibernatespatial.org/repository" }
     //maven { url "http://repo.opengeo.org" }
     maven { url "http://dev.mapfish.org/maven/repository/" }
+    maven { url "http://oss.sonatype.org/content/repositories/snapshots/" }
+}
+
+configurations {
+    ivy
 }
 
 dependencies {
@@ -89,15 +101,28 @@ dependencies {
 
     compile("org.apache.maven:maven-artifact:3.0.3")
 
-    testCompile("junit:junit:4.10")
+
+    testCompile("junit:junit:4.12")
     //testCompile("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-bundle:2.13")
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testCompile("org.assertj:assertj-core:1.7.0")
+
     testCompile("org.springframework.batch:spring-batch-test")
+
+    compile 'org.codehaus.groovy:groovy-all:2.4.1'
+
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+
+    ivy "org.apache.ivy:ivy:2.3.0"
+
     testCompile("org.cassandraunit:cassandra-unit:2.0.2.2") {
         exclude group: 'com.datastax.cassandra'
         exclude group: 'org.slf4j'
     }
     
     //compile("com.nimbusds:nimbus-jose-jwt:2.10.1")
+}
+
+tasks.withType(GroovyCompile) {
+    groovyClasspath += configurations.ivy
 }

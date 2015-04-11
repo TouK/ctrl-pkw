@@ -11,6 +11,7 @@ import pl.ctrlpkw.model.write.ProtocolAccessor;
 
 import javax.annotation.Resource;
 import java.util.Iterator;
+import java.util.Spliterators;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
@@ -23,6 +24,9 @@ public class VotesCountingService {
     @Resource
     CassandraContext cassandraContext;
 
+    @Resource
+    ProtocolSelectorStrategy selector;
+
     public BallotResult sumVotes(Ballot ballot) {
         ProtocolAccessor accessor = cassandraContext.getMappingManager().createAccessor(ProtocolAccessor.class);
 
@@ -34,7 +38,7 @@ public class VotesCountingService {
     }
 
     public BallotResult sumVotes(Iterable<Protocol> protocols) {
-        return StreamSupport.stream(protocols.spliterator(), false)
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new WardIterator(protocols.iterator(), selector), 0), false)
                 .reduce(identity, accumulator, combiner);
     }
 
