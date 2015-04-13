@@ -49,13 +49,17 @@ public class Protocol {
 
     private String comment;
 
+    @JsonIgnore
+    private String cloudinaryCloudName;
+
     @ApiModelProperty(hidden = true)
     @InjectLinks({
             @InjectLink(resource = ProtocolsResource.class, rel = "self", method = "readOne", style = InjectLink.Style.ABSOLUTE),
+            @InjectLink(resource = ProtocolsResource.class, rel = "verification", method = "verify", style = InjectLink.Style.ABSOLUTE),
             @InjectLink(resource = BallotsResource.class, rel = "ballot", method = "readOne", style = InjectLink.Style.ABSOLUTE,
                     bindings = { @Binding(name = "no", value = "${instance.ballotNo}"), @Binding(name = "date", value = "${instance.votingDate}") }
             ),
-            @InjectLink(value="http://res.cloudinary.com/${resource.cloudinaryCloudName}/image/upload/{id}", rel = "img", style = InjectLink.Style.RELATIVE_PATH)
+            @InjectLink(value="http://res.cloudinary.com/{cloudinaryCloudName}/image/upload/{id}", rel = "img", style = InjectLink.Style.RELATIVE_PATH)
 
     })
     private List<Link> links;

@@ -1,6 +1,7 @@
 package pl.ctrlpkw.integrationtest;
 
 import com.google.common.collect.Iterators;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +37,14 @@ public class WardsGeolocalizationIT extends EmbeddedCassandraIT {
     private WardRepository wardRepository;
 
     private RestTemplate restTemplate = new TestRestTemplate();
+
+    @Resource
+    private ClientVersionHeaderInterceptor clientVersionHeaderInterceptor;
+
+    @Before
+    public void addRestTemplateInterceptor() {
+        restTemplate.getInterceptors().add(clientVersionHeaderInterceptor);
+    }
 
     @Test
     public void shouldReturnWardWhenGivenExactLocation() throws InterruptedException {

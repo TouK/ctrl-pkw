@@ -42,6 +42,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -181,5 +182,6 @@ public class ProtocolsResource {
                                     .build()
                     )
                     .comment(entity.getComment())
+                    .cloudinaryCloudName(Optional.ofNullable(entity.getCloudinaryCloudName()).orElse("null"))
                     .build();
 }

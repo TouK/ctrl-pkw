@@ -3,6 +3,7 @@ package pl.ctrlpkw.integrationtest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.batch.item.ExecutionContext;
@@ -23,6 +24,7 @@ import pl.ctrlpkw.Application;
 import pl.ctrlpkw.api.dto.BallotResult;
 import pl.ctrlpkw.api.dto.Protocol;
 
+import javax.annotation.Resource;
 import java.io.File;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -45,6 +47,14 @@ public class ProtocolsGatheringIT extends EmbeddedCassandraIT {
     private String serverPort;
 
     private RestTemplate restTemplate = new RestTemplate();
+
+    @Resource
+    private ClientVersionHeaderInterceptor clientVersionHeaderInterceptor;
+
+    @Before
+    public void addRestTemplateInterceptor() {
+        restTemplate.getInterceptors().add(clientVersionHeaderInterceptor);
+    }
 
     @Test
     public void shouldAcceptProtocolsWithoutErrors() throws Exception {
