@@ -60,6 +60,7 @@ public class ProtocolsGatheringIT extends EmbeddedCassandraIT {
     public void shouldAcceptProtocolsWithoutErrors() throws Exception {
         givenNoProtocolsInDatabase();
         whenFirstRound2010ProtocolsSent();
+        whenFirstRound2010ProtocolsSent();//again
         thenResultsAreSameAsIn2010();
     }
 

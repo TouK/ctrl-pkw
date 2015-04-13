@@ -13,17 +13,6 @@ class VotesCountingServiceSpockTest extends Specification {
 
     }
 
-    def testsumVotes() {
-        when:
-            BallotResult result = countingService.sumVotes(protocols)
-        then:
-            result == expected
-        where:
-            [protocols, expected] << testData()
-
-
-    }
-
     List testData() {
         return [[
                 [new Protocol(
