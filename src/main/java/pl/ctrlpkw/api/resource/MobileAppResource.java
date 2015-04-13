@@ -25,7 +25,11 @@ public class MobileAppResource {
     @ApiOperation(value = "Pobranie aktualnej wersji aplikacji mobilnej")
     @GET
     public Response get(@HeaderParam("User-Agent") String userAgent) {
-        return Response.seeOther(androidUri).build();
+        if (userAgent.toLowerCase().contains("android"))
+            return Response.seeOther(androidUri).build();
+        else if (userAgent.toLowerCase().contains("ipad") || userAgent.toLowerCase().contains("iphone"))
+            return Response.seeOther(iosUri).build();
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
 
 }
