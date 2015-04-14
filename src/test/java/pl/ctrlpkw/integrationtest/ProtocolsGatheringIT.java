@@ -58,10 +58,13 @@ public class ProtocolsGatheringIT extends EmbeddedCassandraIT {
 
     @Test
     public void shouldAcceptProtocolsWithoutErrors() throws Exception {
-        givenNoProtocolsInDatabase();
-        whenFirstRound2010ProtocolsSent();
-        whenFirstRound2010ProtocolsSent();//again
+//        givenNoProtocolsInDatabase();
+//        whenFirstRound2010ProtocolsSent();
+//        whenFirstRound2010ProtocolsSent();//again
+        Thread.sleep(20_000);
+        long start = System.currentTimeMillis();
         thenResultsAreSameAsIn2010();
+        System.out.println("Time: " + (System.currentTimeMillis()-start));
     }
 
     protected void givenNoProtocolsInDatabase() {
