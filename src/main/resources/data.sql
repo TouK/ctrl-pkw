@@ -1,3 +1,5 @@
+INSERT INTO voting(id, voting_date, description) values (2, DATE '2015-05-10', 'Wybory na Prezydenta Rzeczypospolitej Polskiej (1. głosowanie)');
+INSERT INTO voting(id, voting_date, description) values (3, DATE '2015-05-24', 'Wybory na Prezydenta Rzeczypospolitej Polskiej (2. głosowanie)');
 INSERT INTO voting(id, voting_date, description) values (1, DATE '2010-06-20', 'Wybory na Prezydenta Rzeczypospolitej Polskiej (test na podstawie danych z 2010r)');
 
 INSERT INTO ballot(id, voting_id, no, question) values (11, 1, 1, 'Lista kandydatów na Prezydenta Rzeczypospolitej Polskiej');
@@ -13,8 +15,6 @@ INSERT INTO ballot_option(id, ballot_id, no, description) values(118, 11, 8, 'OL
 INSERT INTO ballot_option(id, ballot_id, no, description) values(119, 11, 9, 'PAWLAK Waldemar');
 INSERT INTO ballot_option(id, ballot_id, no, description) values(110, 11, 10, 'ZIĘTEK Bogusław Zbigniew');
 
-INSERT INTO voting(id, voting_date, description) values (2, DATE '2015-05-10', 'Wybory na Prezydenta Rzeczypospolitej Polskiej (1. głosowanie)');
-
 INSERT INTO ballot(id, voting_id, no, question) values (21, 2, 1, 'Lista kandydatów na Prezydenta Rzeczypospolitej Polskiej');
 
 INSERT INTO ballot_option(id, ballot_id, no, description) values(211, 21, 1, 'KORWIN-MIKKE Janusz Ryszard');
@@ -28,8 +28,6 @@ INSERT INTO ballot_option(id, ballot_id, no, description) values(218, 21, 8, 'PA
 INSERT INTO ballot_option(id, ballot_id, no, description) values(219, 21, 9, 'OGÓREK Magdalena Agnieszka');
 INSERT INTO ballot_option(id, ballot_id, no, description) values(220, 21, 10, 'TANAJNO Paweł Jan');
 INSERT INTO ballot_option(id, ballot_id, no, description) values(221, 21, 11, 'BRAUN Grzegorz Michał');
-
-INSERT INTO voting(id, voting_date, description) values (3, DATE '2015-05-24', 'Wybory na Prezydenta Rzeczypospolitej Polskiej (2. głosowanie)');
 
 INSERT INTO ballot(id, voting_id, no, question) values (31, 3, 1, 'Lista kandydatów na Prezydenta Rzeczypospolitej Polskiej');
 
