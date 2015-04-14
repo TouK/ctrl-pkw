@@ -42,6 +42,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -61,6 +62,9 @@ public class ProtocolsResource {
 
     @Resource
     private Cloudinary cloudinary;
+
+    @Context
+    private HttpServletRequest servletRequest;
 
     public String getCloudinaryCloudName() {
         return cloudinary.config.cloudName != null ? cloudinary.config.cloudName : "CLOUDINARY_CLOUD_NAME";
@@ -141,6 +145,10 @@ public class ProtocolsResource {
                 .comment(protocol.getComment())
                 .isVerified(false)
                 .build();
+        if (AccountResolver.INSTANCE.hasAccount(servletRequest)) {
+            Account account = AccountResolver.INSTANCE.getAccount(servletRequest);
+            localBallotResult.setApprovals(Collections.singleton(account.getUsername()));
+        }
         Mapper<Protocol> mapper = cassandraContext.getMappingManager().mapper(Protocol.class);
         mapper.save(localBallotResult);
         return localBallotResult.getId();

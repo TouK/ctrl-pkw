@@ -6,7 +6,11 @@ import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.Frozen;
 import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.datastax.driver.mapping.annotations.Table;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Builder;
 
 import java.util.List;
@@ -63,5 +67,10 @@ public class Protocol {
 
     @Column(name = "deprecations")
     private Set<String> deprecations;
+
+    public boolean isSameWard(Protocol protocol) {
+        return this.ward.equals(protocol.getWard());
+
+    }
 
 }

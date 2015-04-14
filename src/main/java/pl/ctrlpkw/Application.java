@@ -26,8 +26,8 @@ import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
-import pl.ctrlpkw.service.FirstProtocol;
-import pl.ctrlpkw.service.ProtocolSelectorStrategy;
+import pl.ctrlpkw.service.ResultsSelectorStrategy;
+import pl.ctrlpkw.service.UseFirstProtocolStrategy;
 
 import javax.ws.rs.ApplicationPath;
 import java.util.Arrays;
@@ -41,8 +41,8 @@ import java.util.concurrent.TimeUnit;
 public class Application {
 
     @Bean
-    public ProtocolSelectorStrategy protocolSelectorStrategy() {
-        return new FirstProtocol();
+    public ResultsSelectorStrategy resultsSelectorStrategy() {
+        return new UseFirstProtocolStrategy();
     }
 
     @Bean
