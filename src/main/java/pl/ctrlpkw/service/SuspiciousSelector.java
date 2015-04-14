@@ -1,25 +1,26 @@
 package pl.ctrlpkw.service;
 
+import pl.ctrlpkw.api.dto.BallotResult;
 import pl.ctrlpkw.model.write.Protocol;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class SuspiciousSelector implements ProtocolSelectorStrategy {
-    @Override
-    public Optional<Protocol> select(List<Protocol> wardProtocols) {
+public class SuspiciousSelector implements ResultsSelectorStrategy {
 
+    @Override
+    public Optional<BallotResult> apply(List<Protocol> wardProtocols) {
         wardProtocols = getProtocolsWtihImage(wardProtocols);
 
         List<Protocol> approvedProtocols = getApprovedProtocols(wardProtocols);
 
         if (areCoherent(approvedProtocols)) {
-            return approvedProtocols.stream().findFirst();
+            return approvedProtocols.stream().findFirst().map(resultsFromProtocol);
         }
 
         if (areCoherent(wardProtocols) && wardProtocols.size() > 2) {
-            return wardProtocols.stream().findFirst();
+            return wardProtocols.stream().findFirst().map(resultsFromProtocol);
         }
 
         //TODO(cdr) pass quorum satisfied
@@ -63,4 +64,5 @@ public class SuspiciousSelector implements ProtocolSelectorStrategy {
                 && p1.getVotersEntitledCount() == p2.getVotersEntitledCount()
                 && p1.getVotesCastCount() == p2.getVotesCastCount();
     }
+
 }
