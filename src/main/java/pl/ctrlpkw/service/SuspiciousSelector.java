@@ -4,17 +4,15 @@ import pl.ctrlpkw.model.write.Protocol;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SuspiciousSelector implements ProtocolSelectorStrategy {
     @Override
     public Optional<Protocol> select(List<Protocol> wardProtocols) {
 
-        List<Protocol> approvedProtocols = wardProtocols.stream()
-                .filter(SuspiciousSelector::isApproved)
-                .collect(Collectors.toList());
+        wardProtocols = getProtocolsWtihImage(wardProtocols);
+
+        List<Protocol> approvedProtocols = getApprovedProtocols(wardProtocols);
 
         if (areCoherent(approvedProtocols)) {
             return approvedProtocols.stream().findFirst();
@@ -24,8 +22,21 @@ public class SuspiciousSelector implements ProtocolSelectorStrategy {
             return wardProtocols.stream().findFirst();
         }
 
+        //TODO(cdr) pass quorum satisfied
 
         return Optional.empty();
+    }
+
+    private List<Protocol> getApprovedProtocols(List<Protocol> wardProtocols) {
+        return wardProtocols.stream()
+                .filter(SuspiciousSelector::isApproved)
+                .collect(Collectors.toList());
+    }
+
+    private List<Protocol> getProtocolsWtihImage(List<Protocol> wardProtocols) {
+        return wardProtocols.stream()
+                .filter(p -> p.getCloudinaryCloudName() != null)
+                .collect(Collectors.toList());
     }
 
     private static boolean isApproved(Protocol protocol) {

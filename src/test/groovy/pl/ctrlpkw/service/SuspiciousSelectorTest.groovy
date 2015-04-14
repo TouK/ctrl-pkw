@@ -4,11 +4,27 @@ import pl.ctrlpkw.model.write.Protocol
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import java.util.function.Function
+
 class SuspiciousSelectorTest extends Specification {
 
     SuspiciousSelector selector = new SuspiciousSelector()
 
-    def "should select one of coherent approved protocols"() {
+    @Unroll
+    def "should filter out any protocol without image"() {
+        when:
+            Optional<Protocol> selected =  selector.select(protocols)
+        then:
+            selected.present == isSelected
+        where:
+            protocols                                                    | isSelected
+            [approved()]                                                 | true
+            [approved(NO_IMAGE)]                                         | false
+            [approved(NO_IMAGE), approved(NO_IMAGE), approved(NO_IMAGE)] | false
+    }
+
+
+    def "should select any of coherent approved protocols"() {
         given:
 
             int ballotsGivenCount = 789
@@ -39,16 +55,14 @@ class SuspiciousSelectorTest extends Specification {
     }
 
     def "should not select any of non coherent protocols"() {
-        given:
-            Protocol p1 = any()
-            p1.ballotsGivenCount = 123
-            Protocol p2 = any()
-            p2.ballotsGivenCount = 321
-
         when:
-            Optional<Protocol> selected =  selector.select([p1, p2])
+            Optional<Protocol> selected =  selector.select(protocols)
         then:
             !selected.isPresent()
+        where:
+            protocols                                    | _
+            [with(BALLOTS(1)), with(BALLOTS(2))]         | _
+            [approved(BALLOTS(1)), approved(BALLOTS(2))] | _
 
     }
 
@@ -63,48 +77,68 @@ class SuspiciousSelectorTest extends Specification {
             }
         where:
             protocols             | isSelected | selectedBallotsCount
-            [any(), any()]        | false      | _
+            [noImage(), any()]    | false      | _
+            [noImage(), any()]    | false      | _
             [any(), any(), any()] | true       | any().ballotsGivenCount
 
 
     }
 
+
+    private Protocol with(Function<Protocol, Void> firstModificator, Function<Protocol, Void> ... modifier ) {
+        Protocol any = any()
+
+        List<Function<Protocol, Void>> allModifiers = [firstModificator] + modifier.toList()
+        allModifiers.each {
+            it.apply(any)
+        }
+        return any
+    }
+
+    private Protocol noImage(Function<Protocol, Void> ... p) {
+        return with(NO_IMAGE, p)
+    }
+
+    private Protocol approved(Function<Protocol, Void> ... p ) {
+        return with(APPROVED, p)
+    }
+
+    private Protocol depreciated(Function<Protocol, Void> ... p) {
+        return with(DEPRECIATED, p)
+    }
+
+
     private Protocol any() {
-        return any(1)
-    }
-
-    private Protocol verified() {
-        Protocol anyProtocol = any(1)
-        anyProtocol.isVerified = true
-        return anyProtocol
-    }
-
-    private Protocol approved() {
-        Protocol anyProtocol = any(1)
-        anyProtocol.isVerified = true
-        anyProtocol.approvals = ["a", "b"]
-        return anyProtocol
-    }
-
-    private Protocol depreciated() {
-        Protocol anyProtocol = any(1)
-        anyProtocol.isVerified = true
-        anyProtocol.approvals = ["a", "b"]
-        anyProtocol.deprecations = ["c"]
-        return anyProtocol
-    }
-
-
-    private Protocol any(int ballotsCount) {
         return Protocol.builder()
                 .id(UUID.randomUUID())
-                .ballotsGivenCount(ballotsCount)
+                .ballotsGivenCount(1)
                 .votersEntitledCount(2)
                 .votesCastCount(3)
                 .votesValidCount(4)
                 .isVerified(false)
                 .votesCountPerOption([1, 2, 3])
+                .cloudinaryCloudName("image")
                 .build()
-
     }
+
+    private static Function<Protocol, Void> NO_IMAGE = {p -> p.cloudinaryCloudName = null}
+    private static Function<Protocol, Void> APPROVED = {p ->
+        p.isVerified = true
+        p.approvals = ["a", "b"]
+        p.deprecations = []
+    }
+
+    private static Function<Protocol, Void> DEPRECIATED = {p ->
+        p.isVerified = true
+        p.approvals = ["a", "b"]
+        p.deprecations = ["a", "b"]
+    }
+
+    private static Function<Protocol, Void> BALLOTS(Integer ballots) {
+        return {Protocol p ->
+            p.ballotsGivenCount = ballots
+        }
+    }
+
+
 }
