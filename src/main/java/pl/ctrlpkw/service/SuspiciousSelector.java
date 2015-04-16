@@ -11,8 +11,6 @@ public class SuspiciousSelector implements ResultsSelectorStrategy {
 
     @Override
     public Optional<BallotResult> apply(List<Protocol> wardProtocols) {
-        wardProtocols = getProtocolsWtihImage(wardProtocols);
-
         List<Protocol> approvedProtocols = getApprovedProtocols(wardProtocols);
 
         if (areCoherent(approvedProtocols)) {
@@ -58,11 +56,7 @@ public class SuspiciousSelector implements ResultsSelectorStrategy {
     }
 
     private boolean resultEqauls(Protocol p1, Protocol p2) {
-        return p1.getVotesValidCount() == p2.getVotesValidCount()
-                && p1.getVotesCountPerOption().containsAll(p2.getVotesCountPerOption()) && p2.getVotesCountPerOption().containsAll(p1.getVotesCountPerOption())
-                && p1.getBallotsGivenCount() == p2.getBallotsGivenCount()
-                && p1.getVotersEntitledCount() == p2.getVotersEntitledCount()
-                && p1.getVotesCastCount() == p2.getVotesCastCount();
+        return p1.toResult().equals(p2.toResult());
     }
 
 }
