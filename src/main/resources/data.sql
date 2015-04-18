@@ -31,3 +31,8 @@ INSERT INTO ballot_option(id, ballot_id, no, description) values(221, 21, 11, 'B
 
 INSERT INTO ballot(id, voting_id, no, question) values (31, 3, 1, 'Lista kandydatów na Prezydenta Rzeczypospolitej Polskiej');
 
+INSERT INTO quorum_configuration(id, from_size, percent) values (1, 2, 100);
+INSERT INTO quorum_configuration(id, from_size, percent) values (2, 3, 67);
+INSERT INTO quorum_configuration(id, from_size, percent) values (3, 4, 75);
+INSERT INTO quorum_configuration(id, from_size, percent) values (4, 5, 80);
+

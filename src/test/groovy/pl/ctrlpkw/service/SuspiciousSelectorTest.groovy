@@ -1,8 +1,11 @@
 package pl.ctrlpkw.service
 
 import pl.ctrlpkw.api.dto.BallotResult
+import pl.ctrlpkw.model.read.QuorumConfiguration
+import pl.ctrlpkw.model.read.QuorumConfigurationRepository
 import pl.ctrlpkw.model.write.Protocol
 import spock.lang.Ignore
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -10,7 +13,32 @@ import java.util.function.Function
 
 class SuspiciousSelectorTest extends Specification {
 
-    SuspiciousSelector selector = new SuspiciousSelector()
+    @Shared
+    QuorumConfigurationRepository configurationEntryRepository = Mock(QuorumConfigurationRepository)
+
+    SuspiciousSelector selector = new SuspiciousSelector(configurationEntryRepository)
+
+    def setupSpec() {
+        configurationEntryRepository.allOrderByFromSizeDesc() >> [
+                new QuorumConfiguration(
+                        fromSize: 5,
+                        percent: 80
+                ),
+                new QuorumConfiguration(
+                        fromSize: 4,
+                        percent: 75
+                ),
+                new QuorumConfiguration(
+                        fromSize: 3,
+                        percent: 66
+                ),
+                new QuorumConfiguration(
+                        fromSize: 2,
+                        percent: 100
+                )
+        ]
+    }
+
 
     def "should handle empty list"() {
         when:
@@ -25,21 +53,43 @@ class SuspiciousSelectorTest extends Specification {
         then:
             selected.isPresent()
         where:
-            coherentProtocols                                              | _
-            [approved(), approved()]                                       | _
-            [approved(VOTES([1, 2, 3, 4])), approved(VOTES([1, 2, 3, 4]))] | _
+            coherentProtocols                                                     | _
+            [approved()]                                                          | _
+            [approved(), approved()]                                              | _
+            [approved(VOTES([1, 2])), approved(VOTES([1, 2]))]                    | _
+            [approved(BALLOTS(1)), approved(BALLOTS(1)), depreciated(BALLOTS(2))] | _
+    }
+
+    @Unroll
+    def "should select if quorum is satisfied: #message"() {
+        when:
+            Optional<Protocol> selected = selector.apply(protocols)
+        then:
+            selected.isPresent() == isPresent
+        where:
+            protocols                                                                                                    | isPresent | message
+            times(1, UNVERIFIED, VOTES([1, 2]))                                                                          | false     | "1 of 1 protocols is too less"
+            [unverified(VOTES([1, 2])), unverified(VOTES([2, 1]))]                                                       | false     | "no same of 2 protocols"
+            times(2, UNVERIFIED, VOTES([1, 2]))                                                                          | true      | "2 of 2 are same"
+            [unverified(VOTES([1, 2]))] + times(2, UNVERIFIED, VOTES([2, 1]))                                            | true      | "2 same of 3 protocols"
+            times(3, UNVERIFIED, VOTES([1, 2]))                                                                          | true      | "3 same of 3 protocols"
+            [unverified(VOTES([2, 1])), unverified(VOTES([3, 4])), unverified(VOTES([5, 6]))]                            | false     | "no same of 3 protocols"
+            times(2, UNVERIFIED, VOTES([1, 2])) + [unverified(VOTES([2, 1])), unverified(VOTES([3, 4]))]                 | false     | "2 same of 4 protocols"
+            times(3, UNVERIFIED, VOTES([1, 2])) + [unverified(VOTES([2, 1]))]                                            | true      | "3 same of 4 protocols"
+            times(4, UNVERIFIED, VOTES([1, 2]))                                                                          | true      | "4 same of 4 protocols"
+            [unverified(VOTES([2, 1])), unverified(VOTES([3, 4])), unverified(VOTES([5, 6])), unverified(VOTES([5, 6]))] | false     | "no same of 4 protocols"
     }
 
 
     @Unroll
-    def "should not select any of non coherent protocols"() {
+    def "should select none of non coherent protocols"() {
         when:
             Optional<BallotResult> selected = selector.apply(protocols)
         then:
             !selected.isPresent()
         where:
             protocols                                                      | _
-            [with(BALLOTS(1)), with(BALLOTS(1)), with(BALLOTS(2))]         | _
+            [with(BALLOTS(1)), with(BALLOTS(2))]                           | _
             [approved(VOTERS_ENTITLED(1)), approved(VOTERS_ENTITLED(2))]   | _
             [approved(VOTES_CAST(1)), approved(VOTES_CAST(2))]             | _
             [approved(VOTES_VALID(1)), approved(VOTES_VALID(2))]           | _
@@ -59,7 +109,8 @@ class SuspiciousSelectorTest extends Specification {
     }
 
     @Unroll
-    def "should select unverified protocol if all are coferent, unverified and they are 3 min"() {
+    @Ignore
+    def "should select unverified protocol if all are coferent, unverified"() {
         when:
             Optional<BallotResult> selected = selector.apply(protocols)
         then:
@@ -76,6 +127,7 @@ class SuspiciousSelectorTest extends Specification {
     }
 
     @Unroll
+    @Ignore
     def "should select best protocol if possible "() {
         when:
             Optional<BallotResult> selected = selector.apply(protocols)
@@ -92,17 +144,17 @@ class SuspiciousSelectorTest extends Specification {
     }
 
     @Unroll
-    @Ignore
-    def "should filter out any protocol without image"() {
+    def "should filter out any depraciateed protocol"() {
         when:
             Optional<BallotResult> selected = selector.apply(protocols)
         then:
             selected.present == isSelected
         where:
-            protocols                                                    | isSelected
-            [approved()]                                                 | true
-            [approved(NO_IMAGE)]                                         | false
-            [approved(NO_IMAGE), approved(NO_IMAGE), approved(NO_IMAGE)] | false
+            protocols                                     | isSelected
+            [approved()]                                  | true
+            [depreciated()]                               | false
+            [approved(), approved(), approved()]          | true
+            [depreciated(), depreciated(), depreciated()] | false
     }
 
     private Protocol with(Function<Protocol, Void> firstModificator, Function<Protocol, Void>... modifier) {
@@ -113,6 +165,14 @@ class SuspiciousSelectorTest extends Specification {
             it.apply(any)
         }
         return any
+    }
+
+    private List<Protocol> times(int times, Function<Protocol, Void> firstModifier, Function<Protocol, Void>... modifiers) {
+        List<Protocol> protocols = []
+        while (times-- > 0) {
+            protocols += with(firstModifier, modifiers)
+        }
+        return protocols
     }
 
     private Protocol noImage(Function<Protocol, Void>... p) {
@@ -128,8 +188,8 @@ class SuspiciousSelectorTest extends Specification {
     }
 
 
-    private Protocol unverified() {
-        return with(UNVERIFIED)
+    private Protocol unverified(Function<Protocol, Void>... p) {
+        return with(UNVERIFIED, p)
     }
 
     private Protocol any() {
