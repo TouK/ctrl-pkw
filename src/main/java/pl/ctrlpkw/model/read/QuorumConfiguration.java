@@ -22,4 +22,8 @@ public class QuorumConfiguration implements Serializable {
     @Column(nullable = false)
     private Integer percent;
 
+    public boolean isInRuleRange(int size, Integer percent) {
+        return fromSize <= size && this.percent <= percent;
+    }
+
 }

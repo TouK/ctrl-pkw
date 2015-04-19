@@ -9,7 +9,7 @@ import java.util.function.Function;
 
 public interface ResultsSelectorStrategy extends Function<List<Protocol>, Optional<BallotResult>> {
 
-    public static final Function<Protocol, BallotResult > resultsFromProtocol = protocol ->
+    public static final Function<Protocol, BallotResult > resultFromProtocol = protocol ->
             BallotResult.builder()
                     .votersEntitledCount(protocol.getVotersEntitledCount())
                     .ballotsGivenCount(protocol.getBallotsGivenCount())

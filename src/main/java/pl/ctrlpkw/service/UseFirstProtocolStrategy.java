@@ -11,6 +11,6 @@ public class UseFirstProtocolStrategy implements ResultsSelectorStrategy {
 
     @Override
     public Optional<BallotResult> apply(List<Protocol> wardProtocols) {
-        return wardProtocols.stream().findFirst().map(resultsFromProtocol);
+        return wardProtocols.stream().findFirst().map(resultFromProtocol);
     }
 }

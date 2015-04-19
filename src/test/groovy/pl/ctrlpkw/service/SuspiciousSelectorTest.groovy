@@ -109,41 +109,6 @@ class SuspiciousSelectorTest extends Specification {
     }
 
     @Unroll
-    @Ignore
-    def "should select unverified protocol if all are coferent, unverified"() {
-        when:
-            Optional<BallotResult> selected = selector.apply(protocols)
-        then:
-            selected.present == isSelected
-            selected.map { p ->
-                assert p.ballotsGivenCount == selectedBallotsCount
-            }
-        where:
-            protocols                                                | isSelected | selectedBallotsCount
-            [unverified(), unverified()]                             | false      | _
-            [unverified(), unverified(), unverified()]               | true       | unverified().ballotsGivenCount
-            [unverified(), unverified(), unverified(), unverified()] | true       | unverified().ballotsGivenCount
-
-    }
-
-    @Unroll
-    @Ignore
-    def "should select best protocol if possible "() {
-        when:
-            Optional<BallotResult> selected = selector.apply(protocols)
-        then:
-            selected.present == isSelected
-            selected.map { p ->
-                assert p.ballotsGivenCount == selectedBallotsCount
-            }
-        where:
-            protocols             | isSelected | selectedBallotsCount
-            [any(), any()]        | false      | _
-            [any(), any(), any()] | true       | any().ballotsGivenCount
-
-    }
-
-    @Unroll
     def "should filter out any depraciateed protocol"() {
         when:
             Optional<BallotResult> selected = selector.apply(protocols)

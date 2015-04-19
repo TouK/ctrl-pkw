@@ -75,14 +75,5 @@ public class Protocol {
 
     }
 
-    public BallotResult toResult() {
-        return BallotResult.builder()
-                .ballotsGivenCount(ballotsGivenCount)
-                .votersEntitledCount(votersEntitledCount)
-                .votesCastCount(votesCastCount)
-                .votesCountPerOption(new ArrayList<>(votesCountPerOption))
-                .votesValidCount(votesValidCount)
-                .build();
-    }
 
 }
