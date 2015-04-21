@@ -12,7 +12,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Builder;
+import pl.ctrlpkw.api.dto.BallotResult;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -72,5 +74,6 @@ public class Protocol {
         return this.ward.equals(protocol.getWard());
 
     }
+
 
 }

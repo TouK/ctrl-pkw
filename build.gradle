@@ -102,6 +102,8 @@ dependencies {
 
     compile("org.apache.maven:maven-artifact:3.0.3")
 
+    compile 'org.codehaus.groovy:groovy-all:2.4.1'
+    compile 'com.codepoetics:protonpack:1.4'
 
     testCompile("junit:junit:4.12")
     //testCompile("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-bundle:2.13")
@@ -110,7 +112,6 @@ dependencies {
 
     testCompile("org.springframework.batch:spring-batch-test")
 
-    compile 'org.codehaus.groovy:groovy-all:2.4.1'
 
     testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
 
