@@ -1,27 +1,30 @@
 package pl.ctrlpkw.service;
 
 import com.google.common.collect.Lists;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import pl.ctrlpkw.api.dto.BallotResult;
-import pl.ctrlpkw.model.read.QuorumConfiguration;
-import pl.ctrlpkw.model.read.QuorumConfigurationRepository;
 import pl.ctrlpkw.model.write.Protocol;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-public class SuspiciousSelector implements ResultsSelectorStrategy {
+@ConfigurationProperties(prefix = "protocol.selector")
+public class QuorumConsensusResultsSelector implements ResultsSelector, InitializingBean {
 
-    private QuorumConfigurationRepository quorumConfigurationRepository;
-    private List<QuorumConfiguration> configurationEntries;
+    @Getter
+    @Setter
+    private List<QuorumConfigurationEntry> config = Lists.newArrayList();
 
-    @Autowired
-    public SuspiciousSelector(QuorumConfigurationRepository quorumConfigurationRepository) {
-        this.quorumConfigurationRepository = quorumConfigurationRepository;
-        this.configurationEntries = Lists.newArrayList(quorumConfigurationRepository.allOrderByFromSizeDesc());
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        this.getClass();
     }
 
     @Override
@@ -44,7 +47,7 @@ public class SuspiciousSelector implements ResultsSelectorStrategy {
 
     private List<Protocol> getApprovedProtocols(List<Protocol> wardProtocols) {
         return wardProtocols.stream()
-                .filter(SuspiciousSelector::isApproved)
+                .filter(QuorumConsensusResultsSelector::isApproved)
                 .collect(Collectors.toList());
     }
 
@@ -64,7 +67,7 @@ public class SuspiciousSelector implements ResultsSelectorStrategy {
             int coherentToAll = getPercentage(group.size(), protocolsSize);
             return group.stream()
                     .findFirst()
-                    .filter(protocol -> configurationEntries.stream()
+                    .filter(protocol -> config.stream()
                             .filter(c -> c.isInRuleRange(protocolsSize, coherentToAll))
                             .findFirst()
                             .isPresent())
@@ -98,4 +101,17 @@ public class SuspiciousSelector implements ResultsSelectorStrategy {
         return (int) Math.round((double) subset / (double) all * 100.0);
     }
 
+    @Getter
+    @Setter
+    public static class QuorumConfigurationEntry implements Serializable {
+
+        private Long size;
+
+        private Integer percent;
+
+        public boolean isInRuleRange(int size, Integer percent) {
+            return this.size <= size && this.percent <= percent;
+        }
+
+    }
 }

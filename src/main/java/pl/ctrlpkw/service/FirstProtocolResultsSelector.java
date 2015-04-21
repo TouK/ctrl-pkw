@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 
-public class UseFirstProtocolStrategy implements ResultsSelectorStrategy {
+public class FirstProtocolResultsSelector implements ResultsSelector {
 
     @Override
     public Optional<BallotResult> apply(List<Protocol> wardProtocols) {

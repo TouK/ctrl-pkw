@@ -20,7 +20,7 @@ public class VotesCountingService {
     CassandraContext cassandraContext;
 
     @Resource
-    ResultsSelectorStrategy resultsSelectorStrategy;
+    ResultsSelector resultsSelector;
 
     public BallotResult sumVotes(Ballot ballot) {
         ProtocolAccessor accessor = cassandraContext.getMappingManager().createAccessor(ProtocolAccessor.class);
@@ -34,7 +34,7 @@ public class VotesCountingService {
 
     public BallotResult sumVotes(Iterable<Protocol> protocols) {
         return StreamUtils.aggregate(StreamSupport.stream(protocols.spliterator(), false), Protocol::isSameWard)
-                .map(resultsSelectorStrategy)
+                .map(resultsSelector)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .reduce(new BallotResult(0l, 0l, 0l, 0l, Lists.newArrayList()), BallotResult::add);

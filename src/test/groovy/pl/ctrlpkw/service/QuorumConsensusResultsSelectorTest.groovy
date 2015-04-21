@@ -1,42 +1,37 @@
 package pl.ctrlpkw.service
 
 import pl.ctrlpkw.api.dto.BallotResult
-import pl.ctrlpkw.model.read.QuorumConfiguration
-import pl.ctrlpkw.model.read.QuorumConfigurationRepository
 import pl.ctrlpkw.model.write.Protocol
-import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.util.function.Function
 
-class SuspiciousSelectorTest extends Specification {
+class QuorumConsensusResultsSelectorTest extends Specification {
 
     @Shared
-    QuorumConfigurationRepository configurationEntryRepository = Mock(QuorumConfigurationRepository)
-
-    SuspiciousSelector selector = new SuspiciousSelector(configurationEntryRepository)
+    QuorumConsensusResultsSelector selector = new QuorumConsensusResultsSelector()
 
     def setupSpec() {
-        configurationEntryRepository.allOrderByFromSizeDesc() >> [
-                new QuorumConfiguration(
-                        fromSize: 5,
+        selector.setConfig([
+                new QuorumConsensusResultsSelector.QuorumConfigurationEntry(
+                        size: 5,
                         percent: 80
                 ),
-                new QuorumConfiguration(
-                        fromSize: 4,
+                new QuorumConsensusResultsSelector.QuorumConfigurationEntry(
+                        size: 4,
                         percent: 75
                 ),
-                new QuorumConfiguration(
-                        fromSize: 3,
+                new QuorumConsensusResultsSelector.QuorumConfigurationEntry(
+                        size: 3,
                         percent: 66
                 ),
-                new QuorumConfiguration(
-                        fromSize: 2,
+                new QuorumConsensusResultsSelector.QuorumConfigurationEntry(
+                        size: 2,
                         percent: 100
                 )
-        ]
+        ])
     }
 
 
