@@ -120,6 +120,10 @@ public class WardsLoadingBatchConfig {
                         item.readDouble(11),
                         item.readDouble(10)
                 )));
+                if (ward.getLocation().getY() < 49.00 || ward.getLocation().getY() > 54.83 || ward.getLocation().getX() < 14.12 || ward.getLocation().getX() > 24.13) {
+                    log.warn("Invalid coordinates of {} {} : {},{}", ward.getCommunityCode(), ward.getWardNo(), ward.getLocation().getY(), ward.getLocation().getX());
+                    ward.setLocation(null);
+                }
             }
             return ward;
         };
@@ -144,10 +148,56 @@ public class WardsLoadingBatchConfig {
     }
 
     @Bean
-    public Job importWardsJob(JobBuilderFactory jobs, Step stepWards2010, Step stepWards2015) {
+    public ItemReader<FieldSet> wards2015AbroadReader() {
+        FlatFileItemReader<FieldSet> reader = new FlatFileItemReader<>();
+        reader.setResource(new ClassPathResource("obwody_zagraniczne.csv"));
+        reader.setLinesToSkip(0);
+        reader.setLineMapper(new DefaultLineMapper<FieldSet>() {{
+            setLineTokenizer(new DelimitedLineTokenizer(";"));
+            setFieldSetMapper(new PassThroughFieldSetMapper());
+        }});
+        return reader;
+    }
+
+    @Bean
+    public ItemProcessor<FieldSet, Ward> wards2015AbroadProcessor() {
+        return item -> {
+            Ward ward = new Ward();
+            ward.setVotings(Lists.newArrayList(votingRepository.findByDate(
+                    Arrays.asList(LocalDate.parse("2015-05-10"), LocalDate.parse("2015-05-24"))
+            )));
+            ward.setCommunityCode("99999");
+            ward.setWardNo(item.readInt(0));
+            ward.setWardAddress(item.readString(3) + " " + item.readString(4));
+            ward.setLabel("Obwodowa komisja wyborcza za granicą nr " + item.readString(0) + " : " + item.readString(2));
+            if (item.getFieldCount() >= 7) {
+                ward.setLocation(geometryFactory.createPoint(new Coordinate(
+                        item.readDouble(6),
+                        item.readDouble(5)
+                )));
+            }
+            return ward;
+        };
+    }
+
+    @Bean
+    public Step stepWards2015Abroad(StepBuilderFactory stepBuilderFactory, ItemReader<FieldSet> wards2015AbroadReader,
+                              ItemProcessor<FieldSet, Ward> wards2015AbroadProcessor, ItemWriter<Ward> wards2015Writer) {
+        return stepBuilderFactory.get("wards2015Abroad")
+                .<FieldSet, Ward> chunk(1000)
+                .reader(wards2015AbroadReader)
+                .processor(wards2015AbroadProcessor)
+                .writer(wards2015Writer)
+                .build();
+    }
+
+
+
+    @Bean
+    public Job importWardsJob(JobBuilderFactory jobs, Step stepWards2010, Step stepWards2015, Step stepWards2015Abroad) {
         return jobs.get("importWards")
                 .incrementer(new RunIdIncrementer())
-                .flow(stepWards2010).next(stepWards2015)
+                .flow(stepWards2010).next(stepWards2015Abroad).next(stepWards2015)
                 .end()
                 .build();
     }
