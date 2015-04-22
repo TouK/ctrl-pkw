@@ -11,6 +11,7 @@ import org.glassfish.jersey.linking.InjectLink;
 import org.glassfish.jersey.linking.InjectLinks;
 import org.joda.time.LocalDate;
 import pl.ctrlpkw.api.resource.BallotsResource;
+import pl.ctrlpkw.api.resource.ResultsResource;
 
 import javax.ws.rs.core.Link;
 import java.util.List;
@@ -34,7 +35,13 @@ public class Ballot {
     @InjectLinks({
             @InjectLink(resource = BallotsResource.class, rel = "self", method = "readOne", style = InjectLink.Style.ABSOLUTE,
                     bindings = { @Binding(name = "date", value = "${instance.votingDate}") }
-            )
+            ),
+            @InjectLink(resource = ResultsResource.class, rel = "result", method = "read", style = InjectLink.Style.ABSOLUTE,
+                bindings = {
+                        @Binding(name = "date", value = "${instance.votingDate}"),
+                        @Binding(name = "ballotNo", value = "${instance.no}")
+                }
+    )
     })
     private List<Link> links;
 
