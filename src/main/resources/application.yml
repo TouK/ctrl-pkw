@@ -6,7 +6,7 @@ protocol:
         quorum: 1.00
       -
         size: 3
-        quorum: 0.67
+        quorum: 0.66
       -
         size: 4
         quorum: 0.75
