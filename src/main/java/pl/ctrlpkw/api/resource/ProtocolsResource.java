@@ -143,7 +143,7 @@ public class ProtocolsResource {
                 )
                 .cloudinaryCloudName(cloudinary.config.cloudName)
                 .comment(protocol.getComment())
-                .isVerified(false)
+                .verified(false)
                 .build();
         if (AccountResolver.INSTANCE.hasAccount(servletRequest)) {
             Account account = AccountResolver.INSTANCE.getAccount(servletRequest);

@@ -3,114 +3,102 @@ package pl.ctrlpkw.service;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import pl.ctrlpkw.api.dto.BallotResult;
 import pl.ctrlpkw.model.write.Protocol;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
 
 @Component
 @ConfigurationProperties(prefix = "protocol.selector")
-public class QuorumConsensusResultsSelector implements ResultsSelector, InitializingBean {
+public class QuorumConsensusResultsSelector implements ResultsSelector {
 
     @Getter
     @Setter
     private List<QuorumConfigurationEntry> config = Lists.newArrayList();
 
     @Override
-    public void afterPropertiesSet() throws Exception {
-        this.getClass();
+    public Optional<BallotResult> apply(List<Protocol> wardProtocols) {
+
+        Optional<BallotResult> approvedCoherentResult = retrieveResultIfAllApprovedProtocolsHasItTheSame(wardProtocols);
+        if (approvedCoherentResult.isPresent()) return approvedCoherentResult;
+
+        Optional<BallotResult> quorumSatisfiedResult = retrieveBestResultIfItSatisfiesQuorum(wardProtocols);
+        return quorumSatisfiedResult;
     }
 
-    @Override
-    public Optional<BallotResult> apply(List<Protocol> wardProtocols) {
-        wardProtocols = getNonDepreciated(wardProtocols);
-        List<Protocol> approvedProtocols = getApprovedProtocols(wardProtocols);
+    private Optional<BallotResult> retrieveResultIfAllApprovedProtocolsHasItTheSame(Collection<Protocol> protocols) {
+        return protocols.stream()
+                .filter(Protocol::isApproved)
+                .map(resultFromProtocol)
+                .map(Optional::of)
+                .reduce((r1, r2) -> (r1.equals(r2)) ? r1 : Optional.empty())
+                .orElse(Optional.empty())
+                ;
+    }
 
-        if (areCoherent(approvedProtocols)) {
-            return approvedProtocols.stream().findFirst().map(resultFromProtocol);
+    private Optional<BallotResult> retrieveBestResultIfItSatisfiesQuorum(List<Protocol> protocols) {
+        return protocols.stream()
+                .filter(Protocol::isNotDeprecated)
+                .collect(groupingBy(resultFromProtocol, counting()))
+                .entrySet().stream()
+                .map(BestResultHolder::new)
+                .reduce(BestResultHolder::chooseBetterAndSumProtocolsCount)
+                .flatMap(holder -> holder.getResult())
+                ;
+    }
+
+    private class BestResultHolder {
+
+        private long allProtocolsCount;
+
+        private Map.Entry<BallotResult, Long> result;
+
+        public BestResultHolder(Map.Entry<BallotResult, Long> result) {
+            this(result, result.getValue());
         }
 
-        return quorumSatisfied(wardProtocols);
-    }
+        public BestResultHolder(Map.Entry<BallotResult, Long> result, long allProtocolsCount) {
+            this.result = result;
+            this.allProtocolsCount = allProtocolsCount;
+        }
 
-    private List<Protocol> getNonDepreciated(List<Protocol> wardProtocols) {
-        return wardProtocols.stream()
-                .filter(p -> !p.getIsVerified() || isApproved(p))
-                .collect(Collectors.toList());
-    }
+        Optional<BallotResult> getResult() {
+            return Optional.ofNullable(isQuorumSatisfied() ? result.getKey() : null);
+        }
 
-    private List<Protocol> getApprovedProtocols(List<Protocol> wardProtocols) {
-        return wardProtocols.stream()
-                .filter(QuorumConsensusResultsSelector::isApproved)
-                .collect(Collectors.toList());
-    }
+        public boolean isQuorumSatisfied() {
+            return config.stream()
+                    .anyMatch(c -> c.isInRuleRange(allProtocolsCount, result.getValue().doubleValue() / allProtocolsCount));
+        }
 
-    private boolean areCoherent(List<Protocol> verifiedProtocols) {
-        return verifiedProtocols.stream()
-                .findFirst()
-                .map(first -> verifiedProtocols.stream()
-                        .allMatch(protocol -> resultEquals(first, protocol))
-                ).orElse(false);
-    }
+        public BestResultHolder chooseBetterAndSumProtocolsCount(BestResultHolder other) {
+            return new BestResultHolder(
+                    this.result.getValue() >= other.result.getValue() ? this.result : other.result,
+                    this.allProtocolsCount + other.allProtocolsCount
+            );
+        }
 
-    private Optional<BallotResult> quorumSatisfied(List<Protocol> protocols) {
-        Optional<List<Protocol>> biggestCoherentGroup = getBiggestCoherentGroup(protocols);
-
-        return biggestCoherentGroup.flatMap(group -> {
-            int protocolsSize = protocols.size();
-            int coherentToAll = getPercentage(group.size(), protocolsSize);
-            return group.stream()
-                    .findFirst()
-                    .filter(protocol -> config.stream()
-                            .filter(c -> c.isInRuleRange(protocolsSize, coherentToAll))
-                            .findFirst()
-                            .isPresent())
-                    .map(resultFromProtocol);
-        });
-
-    }
-
-    private static boolean isApproved(Protocol protocol) {
-        return protocol.getIsVerified()
-                && !protocol.getApprovals().isEmpty()
-                && protocol.getDeprecations().isEmpty();
-    }
-
-    private boolean resultEquals(Protocol p1, Protocol p2) {
-        return resultFromProtocol.apply(p1)
-                .equals(resultFromProtocol.apply(p2));
-    }
-
-    private Optional<List<Protocol>> getBiggestCoherentGroup(List<Protocol> wardProtocols) {
-        return wardProtocols.stream()
-                .collect(Collectors.groupingBy(resultFromProtocol))
-                .values().stream()
-                .sorted((p1, p2) -> p2.size() - p1.size())
-                .findFirst();
-
-
-    }
-
-    private int getPercentage(long subset, long all) {
-        return (int) Math.round((double) subset / (double) all * 100.0);
-    }
+    };
 
     @Getter
     @Setter
     public static class QuorumConfigurationEntry implements Serializable {
 
-        private Long size;
+        private long size;
 
-        private Integer percent;
+        private double quorum;
 
-        public boolean isInRuleRange(int size, Integer percent) {
-            return this.size <= size && this.percent <= percent;
+        public boolean isInRuleRange(long size, double quorum) {
+            return this.size <= size && this.quorum <= quorum;
         }
 
     }

@@ -12,9 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Builder;
-import pl.ctrlpkw.api.dto.BallotResult;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -62,7 +60,7 @@ public class Protocol {
     private String comment;
 
     @Column(name = "is_verified")
-    private Boolean isVerified = false;
+    private boolean verified = false;
 
     @Column(name = "approvals")
     private Set<String> approvals;
@@ -72,8 +70,19 @@ public class Protocol {
 
     public boolean isSameWard(Protocol protocol) {
         return this.ward.equals(protocol.getWard());
+    }
+
+    public boolean isApproved() {
+        return verified
+                && !approvals.isEmpty()
+                && deprecations.isEmpty();
 
     }
 
+    public boolean isNotDeprecated() {
+        return !verified
+                || deprecations.isEmpty();
+
+    }
 
 }

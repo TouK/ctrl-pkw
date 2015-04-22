@@ -17,19 +17,19 @@ class QuorumConsensusResultsSelectorTest extends Specification {
         selector.setConfig([
                 new QuorumConsensusResultsSelector.QuorumConfigurationEntry(
                         size: 5,
-                        percent: 80
+                        quorum: 0.80
                 ),
                 new QuorumConsensusResultsSelector.QuorumConfigurationEntry(
                         size: 4,
-                        percent: 75
+                        quorum: 0.75
                 ),
                 new QuorumConsensusResultsSelector.QuorumConfigurationEntry(
                         size: 3,
-                        percent: 66
+                        quorum: 0.66
                 ),
                 new QuorumConsensusResultsSelector.QuorumConfigurationEntry(
                         size: 2,
-                        percent: 100
+                        quorum: 1.00
                 )
         ])
     }
@@ -159,7 +159,7 @@ class QuorumConsensusResultsSelectorTest extends Specification {
                 .votersEntitledCount(2)
                 .votesCastCount(3)
                 .votesValidCount(4)
-                .isVerified(false)
+                .verified(false)
                 .votesCountPerOption([1, 2, 3])
                 .cloudinaryCloudName("image")
                 .build()
@@ -168,19 +168,19 @@ class QuorumConsensusResultsSelectorTest extends Specification {
     private static Function<Protocol, Void> NO_IMAGE = { p -> p.cloudinaryCloudName = null }
 
     private static Function<Protocol, Void> APPROVED = { p ->
-        p.isVerified = true
+        p.verified = true
         p.approvals = ["a", "b"]
         p.deprecations = []
     }
 
     private static Function<Protocol, Void> DEPRECIATED = { p ->
-        p.isVerified = true
+        p.verified = true
         p.approvals = ["a", "b"]
         p.deprecations = ["a", "b"]
     }
 
     private static Function<Protocol, Void> UNVERIFIED = { p ->
-        p.isVerified = false
+        p.verified = false
         p.approvals = []
         p.deprecations = []
     }

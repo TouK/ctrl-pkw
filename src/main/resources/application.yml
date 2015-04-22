@@ -3,13 +3,13 @@ protocol:
     config:
       - 
         size: 2 
-        percent: 100
+        quorum: 1.00
       -
         size: 3
-        percent: 67
+        quorum: 0.67
       -
         size: 4
-        percent: 75
+        quorum: 0.75
       -
         size: 5
-        percent: 80
+        quorum: 0.80
