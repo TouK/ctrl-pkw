@@ -10,12 +10,14 @@ import com.wordnik.swagger.model.GrantType;
 import com.wordnik.swagger.model.ImplicitGrant;
 import com.wordnik.swagger.model.LoginEndpoint;
 import com.wordnik.swagger.model.OAuthBuilder;
+import io.undertow.server.handlers.ProxyPeerAddressHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.embedded.undertow.UndertowEmbeddedServletContainerFactory;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.guava.GuavaCacheManager;
@@ -114,6 +116,15 @@ public class Application {
     @Bean
     public LocalValidatorFactoryBean validator() {
         return new LocalValidatorFactoryBean();
+    }
+
+    @Bean
+    public UndertowEmbeddedServletContainerFactory embeddedServletContainerFactory() {
+        UndertowEmbeddedServletContainerFactory factory = new UndertowEmbeddedServletContainerFactory();
+        factory.addDeploymentInfoCustomizers(deploymentInfo ->
+                deploymentInfo.addInitialHandlerChainWrapper(ProxyPeerAddressHandler::new)
+        );
+        return factory;
     }
 
     public static void main(String[] args) {
