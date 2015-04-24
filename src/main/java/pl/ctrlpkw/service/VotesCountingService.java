@@ -3,7 +3,6 @@ package pl.ctrlpkw.service;
 import com.codepoetics.protonpack.StreamUtils;
 import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;
-import pl.ctrlpkw.CassandraContext;
 import pl.ctrlpkw.api.dto.BallotResult;
 import pl.ctrlpkw.model.read.Ballot;
 import pl.ctrlpkw.model.write.Protocol;
@@ -17,15 +16,13 @@ import java.util.stream.StreamSupport;
 public class VotesCountingService {
 
     @Resource
-    CassandraContext cassandraContext;
-
-    @Resource
     ResultsSelector resultsSelector;
 
-    public BallotResult sumVotes(Ballot ballot) {
-        ProtocolAccessor accessor = cassandraContext.getMappingManager().createAccessor(ProtocolAccessor.class);
+    @Resource
+    private ProtocolAccessor protocolAccessor;
 
-        return sumVotes(accessor.findByBallot(
+    public BallotResult sumVotes(Ballot ballot) {
+        return sumVotes(protocolAccessor.findByBallot(
                 pl.ctrlpkw.model.write.Ballot.builder()
                         .votingDate(ballot.getVoting().getDate().toDate())
                         .no(ballot.getNo())

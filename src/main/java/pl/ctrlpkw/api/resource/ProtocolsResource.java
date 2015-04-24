@@ -16,7 +16,6 @@ import com.wordnik.swagger.annotations.Authorization;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.LocalDate;
 import org.springframework.stereotype.Component;
-import pl.ctrlpkw.CassandraContext;
 import pl.ctrlpkw.api.constraint.VotesCountValid;
 import pl.ctrlpkw.api.dto.BallotResult;
 import pl.ctrlpkw.api.dto.PictureUploadToken;
@@ -58,7 +57,10 @@ import java.util.stream.StreamSupport;
 public class ProtocolsResource {
 
     @Resource
-    private CassandraContext cassandraContext;
+    private Mapper<Protocol> protocolMapper;
+
+    @Resource
+    private ProtocolAccessor protocolAccessor;
 
     @Resource
     private Cloudinary cloudinary;
@@ -86,7 +88,6 @@ public class ProtocolsResource {
     @ApiOperation("")
     @GET
     public Iterable<pl.ctrlpkw.api.dto.Protocol> readSome(@QueryParam("count") @DefaultValue("5") int count) {
-        ProtocolAccessor protocolAccessor = cassandraContext.getMappingManager().createAccessor(ProtocolAccessor.class);
         Result<Protocol> protocols = protocolAccessor.findNotVerified(count);
         return StreamSupport.stream(protocols.spliterator(), false)
                 .map(entityToDto)
@@ -97,7 +98,6 @@ public class ProtocolsResource {
     @GET
     @Path("{id}")
     public pl.ctrlpkw.api.dto.Protocol readOne(@ApiParam @PathParam("id") UUID id) {
-        ProtocolAccessor protocolAccessor = cassandraContext.getMappingManager().createAccessor(ProtocolAccessor.class);
         Protocol protocol = protocolAccessor.findById(id);
         return entityToDto.apply(protocol);
     }
@@ -112,7 +112,6 @@ public class ProtocolsResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response verify(@Context HttpServletRequest servletRequest, @ApiParam @PathParam("id") UUID id, @ApiParam(required = true, allowableValues = "\"APPROVAL\", \"DEPRECATION\"") @NotNull VerificationResult result) {
         Account account = AccountResolver.INSTANCE.getAccount(servletRequest);
-        ProtocolAccessor protocolAccessor = cassandraContext.getMappingManager().createAccessor(ProtocolAccessor.class);
         Protocol protocol = protocolAccessor.findById(id);
         if (protocol == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -149,8 +148,7 @@ public class ProtocolsResource {
             Account account = AccountResolver.INSTANCE.getAccount(servletRequest);
             localBallotResult.setApprovals(Collections.singleton(account.getUsername()));
         }
-        Mapper<Protocol> mapper = cassandraContext.getMappingManager().mapper(Protocol.class);
-        mapper.save(localBallotResult);
+        protocolMapper.save(localBallotResult);
         return localBallotResult.getId();
     }
     
