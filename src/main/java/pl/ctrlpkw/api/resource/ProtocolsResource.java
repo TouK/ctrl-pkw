@@ -73,19 +73,25 @@ public class ProtocolsResource {
     }
 
     @ApiOperation("Przesłanie informacji o wynikach głosowania w obwodzie dla wszystkich kart")
-    @ApiResponses({@ApiResponse(code = 202, message = "Protokół przyjęty do przetwarzania", response = PictureUploadToken.class)})
+    @ApiResponses({@ApiResponse(code = 200, message = "Protokół przyjęty do przetwarzania", response = PictureUploadToken.class)})
     @POST
     public Response create(@Valid @VotesCountValid pl.ctrlpkw.api.dto.Protocol protocol) {
-        UUID uuid = saveProtocol(protocol);
-        if (cloudinary.config.apiKey != null) {
-            return Response.accepted(authorizePictureUpload(uuid)).build();
-        } else {
-            log.debug("No Cloudinary comnfiguration");
-            return Response.accepted().build();
-        }
+
+        Optional<PictureUploadToken> pictureUploadToken = Optional.ofNullable(
+                cloudinary.config.apiKey != null ? authorizePictureUpload() : null
+        );
+
+        UUID protocolId = saveProtocol(protocol, pictureUploadToken);
+
+        pictureUploadToken.ifPresent(
+                value -> value.setProtocolId(protocolId)
+        );
+
+        return Response.ok(pictureUploadToken.orElse(null)).build();
     }
 
     @ApiOperation("")
+    @AuthorizationRequired
     @GET
     public Iterable<pl.ctrlpkw.api.dto.Protocol> readSome(@QueryParam("count") @DefaultValue("5") int count) {
         Result<Protocol> protocols = protocolAccessor.findNotVerified(count);
@@ -102,6 +108,31 @@ public class ProtocolsResource {
         return entityToDto.apply(protocol);
     }
 
+    @ApiOperation("Przesłanie kolejnego zdjęcie protokołu")
+    @ApiResponses({@ApiResponse(code = 200, message = "Można wysłać kolejne zdjęcie", response = PictureUploadToken.class)})
+    @POST
+    @Path("{id}/image")
+    public Response authorizeNextImage(@ApiParam @PathParam("id") UUID id) {
+        Protocol protocol = protocolAccessor.findById(id);
+        if (protocol == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<PictureUploadToken> pictureUploadToken = Optional.ofNullable(
+                cloudinary.config.apiKey != null ? authorizePictureUpload() : null
+        );
+
+        pictureUploadToken.ifPresent(
+                value -> {
+                    value.setProtocolId(id);
+                    protocol.getImageIds().add(value.getPublicId());
+                    protocolMapper.save(protocol);
+                }
+        );
+
+        return Response.ok(pictureUploadToken.orElse(null)).build();
+
+    }
 
     public enum VerificationResult { APPROVAL, DEPRECATION }
 
@@ -128,15 +159,15 @@ public class ProtocolsResource {
         return Response.status(Response.Status.BAD_REQUEST).build();
     }
 
-    private UUID saveProtocol(pl.ctrlpkw.api.dto.Protocol protocol) {
+    private UUID saveProtocol(pl.ctrlpkw.api.dto.Protocol protocol, Optional<PictureUploadToken> pictureUploadToken) {
         Protocol localBallotResult = Protocol.builder()
                 .id(UUID.randomUUID())
                 .ballot(Ballot.builder().votingDate(protocol.getVotingDate().toDate()).no(protocol.getBallotNo()).build())
                 .ward(Ward.builder().communityCode(protocol.getCommunityCode()).no(protocol.getWardNo()).build())
-                        .votersEntitledCount(protocol.getBallotResult().getVotersEntitledCount())
-                        .ballotsGivenCount(protocol.getBallotResult().getBallotsGivenCount())
-                        .votesCastCount(protocol.getBallotResult().getVotesCastCount())
-                        .votesValidCount(protocol.getBallotResult().getVotesValidCount())
+                .votersEntitledCount(protocol.getBallotResult().getVotersEntitledCount())
+                .ballotsGivenCount(protocol.getBallotResult().getBallotsGivenCount())
+                .votesCastCount(protocol.getBallotResult().getVotesCastCount())
+                .votesValidCount(protocol.getBallotResult().getVotesValidCount())
                 .votesCountPerOption(
                         protocol.getBallotResult().getVotesCountPerOption()
                 )
@@ -144,6 +175,9 @@ public class ProtocolsResource {
                 .comment(protocol.getComment())
                 .verified(false)
                 .build();
+        pictureUploadToken.ifPresent(
+                value -> localBallotResult.setImageIds(Sets.newHashSet(value.getPublicId()))
+        );
         if (AccountResolver.INSTANCE.hasAccount(servletRequest)) {
             Account account = AccountResolver.INSTANCE.getAccount(servletRequest);
             localBallotResult.setApprovals(Collections.singleton(account.getUsername()));
@@ -151,9 +185,10 @@ public class ProtocolsResource {
         protocolMapper.save(localBallotResult);
         return localBallotResult.getId();
     }
-    
-    private PictureUploadToken authorizePictureUpload(UUID publicId) {
-        
+
+    private PictureUploadToken authorizePictureUpload() {
+
+        UUID publicId = UUID.randomUUID();
         int timestamp = (int) (System.currentTimeMillis() / 1000L);
 
         String signature = cloudinary.apiSignRequest(
@@ -165,7 +200,7 @@ public class ProtocolsResource {
 
         return PictureUploadToken.builder()
                 .apiKey(cloudinary.config.apiKey)
-                .publicId(String.valueOf(publicId))
+                .publicId(publicId)
                 .timestamp(timestamp)
                 .signature(signature)
                 .build();

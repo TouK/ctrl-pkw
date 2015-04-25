@@ -70,6 +70,9 @@ public class Protocol {
     @Column(name = "deprecations")
     private Set<String> deprecations;
 
+    @Column(name ="image_ids")
+    private Set<UUID> imageIds;
+
     public boolean isSameWard(Protocol protocol) {
         return this.ward.equals(protocol.getWard());
     }

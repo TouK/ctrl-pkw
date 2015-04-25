@@ -27,4 +27,7 @@ public interface ProtocolAccessor {
     @Query("UPDATE ctrl_pkw.protocol SET deprecations = deprecations + :username, is_verified = true WHERE ward = :ward AND ballot = :ballot AND id = :id")
     public ResultSet addDeprecation(@Param("ward") Ward ward, @Param("ballot") Ballot ballot, @Param("id") UUID id, @Param("username") Set<String> username);
 
+    @Query("UPDATE ctrl_pkw.protocol SET deprecations = deprecations + :username, is_verified = true WHERE ward = :ward AND ballot = :ballot AND id = :id")
+    public ResultSet addImageId(@Param("ward") Ward ward, @Param("ballot") Ballot ballot, @Param("id") UUID id, @Param("imageId") Set<UUID> imageId);
+
 }

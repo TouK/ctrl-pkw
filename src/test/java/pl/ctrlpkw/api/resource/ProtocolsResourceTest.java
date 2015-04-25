@@ -103,7 +103,7 @@ public class ProtocolsResourceTest {
         );
         assertThat(pictureUploadToken.getApiKey()).isEqualTo("key");
         assertThat(pictureUploadToken.getTimestamp()).isGreaterThan(0);
-        assertThat(pictureUploadToken.getPublicId()).isNotEmpty();
+        assertThat(pictureUploadToken.getPublicId()).isNotNull();
         assertThat(pictureUploadToken.getSignature()).isNotEmpty();
 
     }

@@ -22,6 +22,7 @@ CREATE TABLE protocol (
     votes_valid_count bigint,
     votes_count_per_option list<bigint>,
     cloudinary_cloud_name varchar,
+    image_ids set<uuid>,
     comment varchar,
     is_verified boolean,
     approvals set<varchar>,
