@@ -41,6 +41,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
@@ -106,6 +108,16 @@ public class ProtocolsResource {
     public pl.ctrlpkw.api.dto.Protocol readOne(@ApiParam @PathParam("id") UUID id) {
         Protocol protocol = protocolAccessor.findById(id);
         return entityToDto.apply(protocol);
+    }
+
+    @ApiOperation(value = "Pobranie URLi wszystkich zdjęć dla protokołu", response = URI.class, responseContainer = "Set")
+    @GET
+    @Path("{id}/image")
+    public Collection<URI> listImages(@ApiParam @PathParam("id") UUID id) {
+        Protocol protocol = protocolAccessor.findById(id);
+        return protocol.getImageIds().stream()
+                .map(publicId -> URI.create("http://res.cloudinary.com/" + protocol.getCloudinaryCloudName() + "/image/upload/" + publicId))
+                .collect(Collectors.toSet());
     }
 
     @ApiOperation("Przesłanie kolejnego zdjęcie protokołu")
@@ -223,6 +235,5 @@ public class ProtocolsResource {
                                     .build()
                     )
                     .comment(entity.getComment())
-                    .cloudinaryCloudName(Optional.ofNullable(entity.getCloudinaryCloudName()).orElse("null"))
                     .build();
 }
