@@ -76,7 +76,7 @@ public class ProtocolsResourceTest {
                 .build();
 
         //when
-        Response response = protocolsResource.create(protocol, true);
+        Response response = protocolsResource.create(protocol, true, null);
         PictureUploadToken pictureUploadToken = (PictureUploadToken) response.getEntity();
 
         //then

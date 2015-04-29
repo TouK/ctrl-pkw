@@ -14,6 +14,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Builder;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -72,6 +73,15 @@ public class Protocol {
 
     @Column(name ="image_ids")
     private Set<UUID> imageIds;
+
+    @Column(name = "creation_time")
+    private Date creationTime;
+
+    @Column(name = "update_time")
+    private Date updateTime;
+
+    @Column(name = "client_id")
+    private String clientId;
 
     public boolean isSameWard(Protocol protocol) {
         return this.ward.equals(protocol.getWard());

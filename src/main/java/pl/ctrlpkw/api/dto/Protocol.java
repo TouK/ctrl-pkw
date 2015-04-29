@@ -1,6 +1,5 @@
 package pl.ctrlpkw.api.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -29,7 +28,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Protocol {
 
-    @JsonIgnore
     private UUID id;
 
     @NotNull
