@@ -17,17 +17,17 @@ INSERT INTO ballot_option(id, ballot_id, no, description) values(110, 11, 10, 'Z
 
 INSERT INTO ballot(id, voting_id, no, question) values (21, 2, 1, 'Lista kandydatów na Prezydenta Rzeczypospolitej Polskiej');
 
-INSERT INTO ballot_option(id, ballot_id, no, description) values(211, 21, 1, 'KORWIN-MIKKE Janusz Ryszard');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(212, 21, 2, 'KOMOROWSKI Bronisław Maria');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(211, 21, 1, 'BRAUN Grzegorz Michał');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(212, 21, 2, 'DUDA Andrzej Sebastian');
 INSERT INTO ballot_option(id, ballot_id, no, description) values(213, 21, 3, 'JARUBAS Adam Sebastian');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(214, 21, 4, 'KUKIZ Paweł Piotr');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(215, 21, 5, 'KOWALSKI Marian Janusz');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(216, 21, 6, 'WILK Jacek');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(217, 21, 7, 'DUDA Andrzej Sebastian');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(218, 21, 8, 'PALIKOT Janusz Marian');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(219, 21, 9, 'OGÓREK Magdalena Agnieszka');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(214, 21, 4, 'KOMOROWSKI Bronisław Maria');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(215, 21, 5, 'KORWIN-MIKKE Janusz Ryszard');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(216, 21, 6, 'KOWALSKI Marian Janusz');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(217, 21, 7, 'KUKIZ Paweł Piotr');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(218, 21, 8, 'OGÓREK Magdalena Agnieszka');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(219, 21, 9, 'PALIKOT Janusz Marian');
 INSERT INTO ballot_option(id, ballot_id, no, description) values(220, 21, 10, 'TANAJNO Paweł Jan');
-INSERT INTO ballot_option(id, ballot_id, no, description) values(221, 21, 11, 'BRAUN Grzegorz Michał');
+INSERT INTO ballot_option(id, ballot_id, no, description) values(221, 21, 11, 'WILK Jacek');
 
 INSERT INTO ballot(id, voting_id, no, question) values (31, 3, 1, 'Lista kandydatów na Prezydenta Rzeczypospolitej Polskiej');
 
