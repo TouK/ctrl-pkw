@@ -22,11 +22,13 @@ import org.springframework.batch.item.file.transform.FieldSet;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import pl.ctrlpkw.model.read.Voting;
 import pl.ctrlpkw.model.read.VotingRepository;
 import pl.ctrlpkw.model.read.Ward;
 
 import javax.annotation.Resource;
 import javax.persistence.EntityManagerFactory;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 @Slf4j
@@ -54,11 +56,12 @@ public class WardsLoadingBatchConfig {
 
     @Bean
     public ItemProcessor<FieldSet, Ward> wards2010Processor() {
+        ArrayList<Voting> votings = Lists.newArrayList(
+                votingRepository.findByDate(Arrays.asList(LocalDate.parse("2010-06-20")))
+        );
         return item -> {
             Ward ward = new Ward();
-            ward.setVotings(Lists.newArrayList(
-                    votingRepository.findByDate(Arrays.asList(LocalDate.parse("2010-06-20")))
-            ));
+            ward.setVotings(votings);
             ward.setCommunityCode(item.readString(2));
             ward.setWardNo(item.readInt(6));
             ward.setWardAddress(item.readString(7));
@@ -106,11 +109,12 @@ public class WardsLoadingBatchConfig {
 
     @Bean
     public ItemProcessor<FieldSet, Ward> wards2015Processor() {
+        ArrayList<Voting> votings = Lists.newArrayList(votingRepository.findByDate(
+                Arrays.asList(LocalDate.parse("2015-05-10"), LocalDate.parse("2015-05-24"))
+        ));
         return item -> {
             Ward ward = new Ward();
-            ward.setVotings(Lists.newArrayList(votingRepository.findByDate(
-                    Arrays.asList(LocalDate.parse("2015-05-10"), LocalDate.parse("2015-05-24"))
-            )));
+            ward.setVotings(votings);
             ward.setCommunityCode(item.readString(2).substring(2,8));
             ward.setWardNo(item.readInt(5));
             ward.setWardAddress(item.readString(6));
@@ -161,11 +165,12 @@ public class WardsLoadingBatchConfig {
 
     @Bean
     public ItemProcessor<FieldSet, Ward> wards2015AbroadProcessor() {
+        ArrayList<Voting> votings = Lists.newArrayList(votingRepository.findByDate(
+                Arrays.asList(LocalDate.parse("2015-05-10"), LocalDate.parse("2015-05-24"))
+        ));
         return item -> {
             Ward ward = new Ward();
-            ward.setVotings(Lists.newArrayList(votingRepository.findByDate(
-                    Arrays.asList(LocalDate.parse("2015-05-10"), LocalDate.parse("2015-05-24"))
-            )));
+            ward.setVotings(votings);
             ward.setCommunityCode("99999");
             ward.setWardNo(item.readInt(0));
             ward.setWardAddress(item.readString(3) + " " + item.readString(4));

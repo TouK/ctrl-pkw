@@ -13,8 +13,6 @@ import java.util.UUID;
 @Builder
 public class PictureUploadToken {
 
-    private UUID protocolId;
-
     private int timestamp;
     
     private UUID publicId;

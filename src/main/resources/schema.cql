@@ -27,6 +27,8 @@ CREATE TABLE protocol (
     is_verified boolean,
     approvals set<varchar>,
     deprecations set<varchar>,
+    creation_time timestamp,
+    update_time timestamp,
     client_id varchar,
     PRIMARY KEY ((ward, ballot), id)
 );
