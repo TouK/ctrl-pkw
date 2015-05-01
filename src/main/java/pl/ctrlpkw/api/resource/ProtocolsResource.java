@@ -171,16 +171,16 @@ public class ProtocolsResource {
         switch (result) {
             case APPROVAL:
                 if (protocol.getApprovals() == null) {
-                    protocol.setApprovals(Collections.<String>emptySet());
+                    protocol.setApprovals(Sets.newHashSet());
                 }
                 protocol.getApprovals().add(account.getUsername());
             case DEPRECATION:
                 if (protocol.getDeprecations() == null) {
-                    protocol.setDeprecations(Collections.<String>emptySet());
+                    protocol.setDeprecations(Sets.newHashSet());
                 }
                 protocol.getDeprecations().add(account.getUsername());
         }
-        protocol.setUpdateTime(new Date());
+            protocol.setUpdateTime(new Date());
         protocolMapper.save(protocol);
         return Response.ok(protocol).build();
     }
