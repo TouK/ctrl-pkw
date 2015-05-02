@@ -32,7 +32,6 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import javax.ws.rs.ApplicationPath;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @EnableCaching
@@ -55,7 +54,9 @@ public class Application {
     public CacheManager cacheManager() {
         GuavaCacheManager cacheManager = new GuavaCacheManager();
         cacheManager.setCacheBuilder(CacheBuilder.newBuilder()
-                .expireAfterWrite(60, TimeUnit.SECONDS).maximumSize(100));
+                //.expireAfterWrite(600, TimeUnit.SECONDS)
+                //.maximumSize(50000)
+        );
         return cacheManager;
     }
 
@@ -63,6 +64,7 @@ public class Application {
     public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory cf) {
         RedisTemplate<String, String> redisTemplate = new RedisTemplate<String, String>();
         redisTemplate.setConnectionFactory(cf);
+        redisTemplate.setKeySerializer(redisTemplate.getStringSerializer());
         return redisTemplate;
     }
 
@@ -72,7 +74,8 @@ public class Application {
         try {
             connection = redisTemplate.getConnectionFactory().getConnection();
             RedisCacheManager cacheManager = new RedisCacheManager(redisTemplate);
-            cacheManager.setDefaultExpiration(3000);
+            cacheManager.setUsePrefix(true);
+            //cacheManager.setDefaultExpiration(0);
             return cacheManager;
 
         } catch (Exception ex) {

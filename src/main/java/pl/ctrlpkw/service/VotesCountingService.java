@@ -2,8 +2,11 @@ package pl.ctrlpkw.service;
 
 import com.codepoetics.protonpack.StreamUtils;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
+import org.joda.time.LocalDate;
 import org.springframework.stereotype.Service;
 import pl.ctrlpkw.api.dto.BallotResult;
+import pl.ctrlpkw.api.dto.Ward;
 import pl.ctrlpkw.model.read.Ballot;
 import pl.ctrlpkw.model.write.Protocol;
 import pl.ctrlpkw.model.write.ProtocolAccessor;
@@ -12,55 +15,70 @@ import javax.annotation.Resource;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 
 @Service
+@Slf4j
 public class VotesCountingService {
 
     @Resource
     ResultsSelector resultsSelector;
 
     @Resource
-    WardStateProviderService wardStateProviderService;
+    WardStateProvider wardStateProvider;
 
     @Resource
     private ProtocolAccessor protocolAccessor;
 
     public BallotResult sumVotes(Ballot ballot) {
-        return sumVotes(protocolAccessor.findByBallot(
+        return sumVotes(
                 pl.ctrlpkw.model.write.Ballot.builder()
                         .votingDate(ballot.getVoting().getDate().toDate())
                         .no(ballot.getNo())
-                        .build()));
+                        .build()
+        );
     }
 
-    public BallotResult sumVotes(Iterable<Protocol> protocols) {
+    public BallotResult sumVotes(pl.ctrlpkw.model.write.Ballot ballot) {
+        Iterable<Protocol> protocols = protocolAccessor.findByBallot(ballot);
 
-        ExecutorService executorService = Executors.newFixedThreadPool(500);
+        ExecutorService executorService = Executors.newFixedThreadPool(64);
 
-        return StreamUtils.aggregate(StreamSupport.stream(protocols.spliterator(), false), Protocol::isSameWard)
-                .map(wardProtocols -> new WardProtocols(wardProtocols.stream().findFirst().get().getWard(), wardProtocols))
-                .map(wardProtocols -> new WardResult(wardProtocols.getWard(), resultsSelector.apply(wardProtocols.getProtocols())))
-                .map(a ->{
+        log.info("Votes summing started");
+        BallotResult result = StreamUtils.aggregate(StreamSupport.stream(protocols.spliterator(), true), Protocol::isSameWard)
+                .map(resultsSelector)
+                .map(localBallotResult -> {
+                    executorService.execute(() -> {
+                        wardStateProvider.save(
+                                LocalDate.fromDateFields(ballot.getVotingDate()),
+                                localBallotResult.getWard().getCommunityCode(),
+                                localBallotResult.getWard().getNo(),
+                                localBallotResult.getBallotResult().isPresent() ?
+                                        Ward.ProtocolStatus.CONFIRMED : Ward.ProtocolStatus.VAGUE
 
-                    FutureTask<Void> task = new FutureTask<>(() -> {
-                        if (a.getBallotResult().isPresent()) {
-                            wardStateProviderService.setConfirmedProtocolStatus(a.getWard().getCommunityCode(), a.getWard().getNo());
-                        } else {
-                            wardStateProviderService.setVagueProtocolStatus(a.getWard().getCommunityCode(), a.getWard().getNo());
-                        }
-                        return null;
+                        );
                     });
-
-                    executorService.execute(task);
-
-                    return a;
+                    return localBallotResult.getBallotResult();
                 })
-                .map(wardResult -> wardResult.getBallotResult())
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .reduce(new BallotResult(0l, 0l, 0l, 0l, Lists.newArrayList()), BallotResult::add);
+
+        log.info("Votes summing finished");
+        try {
+            executorService.shutdown();
+            log.info("Waitng for cache tasks to finish...");
+            if (executorService.awaitTermination(15, TimeUnit.MINUTES)) {
+                log.warn("Finished.");
+            } else {
+                log.warn("Timed out.");
+            }
+        } catch (InterruptedException e) {
+            log.warn("Timeout waiting for cache tasks");
+        }
+
+        return result;
     }
 
 }

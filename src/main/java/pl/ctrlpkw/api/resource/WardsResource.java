@@ -15,6 +15,7 @@ import pl.ctrlpkw.model.read.Voting;
 import pl.ctrlpkw.model.read.VotingRepository;
 import pl.ctrlpkw.model.read.Ward;
 import pl.ctrlpkw.model.read.WardRepository;
+import pl.ctrlpkw.service.WardStateProvider;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
@@ -48,6 +49,9 @@ public class WardsResource {
     @Resource
     private VotingRepository votingRepository;
 
+    @Resource
+    private WardStateProvider wardStateProvider;
+
     @ApiOperation(value = "Pobranie obwodów, których lokale wyborcze są nabliższe podanej lokalizacji", response = pl.ctrlpkw.api.dto.Ward.class, responseContainer = "List")
     @GET
     public Iterable<pl.ctrlpkw.api.dto.Ward> readByClosestLocation(
@@ -58,6 +62,8 @@ public class WardsResource {
             @QueryParam("minCount") @DefaultValue("3") short minCount)
     {
         Voting voting = votingRepository.findByDate(LocalDate.parse(votingDate));
+        if (voting == null)
+            throw new NotFoundException();
         Point location = geometryFactory.createPoint(new Coordinate(longitude, latidude));
 
         return StreamSupport.stream(
@@ -65,7 +71,36 @@ public class WardsResource {
                         voting, location, radius, minCount
                 ).spliterator(), false)
                 .map(entityToDto)
+                .map(wardDto -> {
+                    wardDto.setProtocolStatus(
+                            wardStateProvider.read(voting.getDate(), wardDto.getCommunityCode(), wardDto.getNo())
+                    );
+                    return wardDto;
+                })
                 .collect(Collectors.toList());
+    }
+
+
+    @ApiOperation("Pobranie konkretnego obwodu głosowania")
+    @Path("{communityCode}/{wardNo}")
+    @GET
+    public pl.ctrlpkw.api.dto.Ward readOne(
+            @PathParam("date") String votingDate,
+            @PathParam("communityCode") String communityCode,
+            @PathParam("wardNo") int wardNo
+    ) {
+        Voting voting = votingRepository.findByDate(LocalDate.parse(votingDate));
+        if (voting == null)
+            throw new NotFoundException();
+        Ward ward = wardRepository.findByVotingsAndCommunityCodeAndWardNo(voting, communityCode, wardNo);
+        if (ward == null)
+            throw new NotFoundException();
+
+        pl.ctrlpkw.api.dto.Ward wardDto = entityToDto.apply(ward);
+        wardDto.setProtocolStatus(
+                wardStateProvider.read(voting.getDate(), wardDto.getCommunityCode(), wardDto.getNo())
+        );
+        return wardDto;
     }
 
     private Iterable<Ward> getAllWardsWithinRadiusAndTopUpWithClosestIfAtLeastMinCountNotFound(
@@ -95,8 +130,8 @@ public class WardsResource {
                     .no(entity.getWardNo())
                     .address(entity.getWardAddress())
                     .location(entity.getLocation() != null ?
-                            Location.builder().latitude(entity.getLocation().getY()).longitude(entity.getLocation().getX()).build()
-                            : null
+                                    Location.builder().latitude(entity.getLocation().getY()).longitude(entity.getLocation().getX()).build()
+                                    : null
                     )
                     .label(entity.getLabel())
                     .protocolStatus(pl.ctrlpkw.api.dto.Ward.ProtocolStatus.LACK)

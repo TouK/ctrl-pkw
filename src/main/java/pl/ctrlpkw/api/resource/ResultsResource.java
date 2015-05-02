@@ -39,7 +39,7 @@ public class ResultsResource {
     @ApiOperation("Pobranie wyników głosowania dla konkretnego dnia i konkretnej karty")
     @GET
     @Transactional
-    @Cacheable(value = "results", cacheManager = "redisCacheManager")
+    @Cacheable(value = "results", cacheManager = "redisCacheManager", key = "#votingDate + #ballotNo")
     public BallotResult read(@PathParam("date") String votingDate, @PathParam("ballotNo") Integer ballotNo) {
 
         Ballot ballot = ballotsRepository.findByDateAndNo(LocalDate.parse(votingDate), ballotNo);
@@ -52,7 +52,7 @@ public class ResultsResource {
     @ApiOperation("Pobranie wyników głosowania dla konkretnego dnia i konkretnej karty")
     @POST
     @Transactional
-    @CachePut(value = "results", cacheManager = "redisCacheManager")
+    @CachePut(value = "results", cacheManager = "redisCacheManager", key = "#votingDate + #ballotNo")
     public BallotResult count(@PathParam("date") String votingDate, @PathParam("ballotNo") Integer ballotNo) {
 
         Ballot ballot = ballotsRepository.findByDateAndNo(LocalDate.parse(votingDate), ballotNo);

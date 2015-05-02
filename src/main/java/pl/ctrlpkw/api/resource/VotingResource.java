@@ -44,6 +44,10 @@ public class VotingResource {
         return entityToDto.apply(votingRepository.findByDate(LocalDate.parse(dateString)));
     }
 
-    private static Function<Voting, pl.ctrlpkw.api.dto.Voting> entityToDto = entity -> pl.ctrlpkw.api.dto.Voting.builder().date(entity.getDate()).description(entity.getDescription()).build();
+    private static Function<Voting, pl.ctrlpkw.api.dto.Voting> entityToDto = entity ->
+            pl.ctrlpkw.api.dto.Voting.builder()
+                    .date(entity.getDate())
+                    .description(entity.getDescription())
+                    .build();
 
 }

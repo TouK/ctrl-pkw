@@ -22,4 +22,5 @@ public interface WardRepository extends PagingAndSortingRepository<Ward, Long> {
 
     Iterable<Ward> findByCommunityCode(String communityCode);
 
+    Ward findByVotingsAndCommunityCodeAndWardNo(Voting voting, String communityCode, Integer wardNo);
 }
