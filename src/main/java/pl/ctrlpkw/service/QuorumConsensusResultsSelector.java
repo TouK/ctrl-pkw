@@ -26,15 +26,17 @@ public class QuorumConsensusResultsSelector implements ResultsSelector {
     private List<QuorumConfigurationEntry> config = Lists.newArrayList();
 
     @Override
-    public WardResult apply(List<Protocol> wardProtocols) {
+    public Optional<BallotResult> apply(List<Protocol> wardProtocols) {
+        if (wardProtocols.isEmpty())
+            return Optional.empty();
 
         Optional<BallotResult> approvedCoherentResult = retrieveResultIfAllApprovedProtocolsHasItTheSame(wardProtocols);
         if (approvedCoherentResult.isPresent()) {
-            return new WardResult(wardProtocols.get(0).getWard(), approvedCoherentResult);
+            return approvedCoherentResult;
         }
 
         Optional<BallotResult> quorumSatisfiedResult = retrieveBestResultIfItSatisfiesQuorum(wardProtocols);
-        return new WardResult(wardProtocols.get(0).getWard(), quorumSatisfiedResult);
+        return quorumSatisfiedResult;
     }
 
     private Optional<BallotResult> retrieveResultIfAllApprovedProtocolsHasItTheSame(Collection<Protocol> protocols) {

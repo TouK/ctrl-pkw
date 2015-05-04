@@ -3,6 +3,7 @@ package pl.ctrlpkw.service;
 import com.codepoetics.protonpack.StreamUtils;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.LocalDate;
 import org.springframework.stereotype.Service;
 import pl.ctrlpkw.api.dto.BallotResult;
@@ -29,6 +30,7 @@ public class VotesCountingService {
     WardStateProvider wardStateProvider;
 
     @Resource
+
     private ProtocolAccessor protocolAccessor;
 
     public BallotResult sumVotes(Ballot ballot) {
@@ -47,19 +49,19 @@ public class VotesCountingService {
 
         log.info("Votes summing started");
         BallotResult result = StreamUtils.aggregate(StreamSupport.stream(protocols.spliterator(), true), Protocol::isSameWard)
-                .map(resultsSelector)
+                .map(wardProtocols -> Pair.of(wardProtocols.get(0).getWard(), resultsSelector.apply(wardProtocols)))
                 .map(localBallotResult -> {
                     executorService.execute(() -> {
                         wardStateProvider.save(
                                 LocalDate.fromDateFields(ballot.getVotingDate()),
-                                localBallotResult.getWard().getCommunityCode(),
-                                localBallotResult.getWard().getNo(),
-                                localBallotResult.getBallotResult().isPresent() ?
+                                localBallotResult.getKey().getCommunityCode(),
+                                localBallotResult.getKey().getNo(),
+                                localBallotResult.getValue().isPresent() ?
                                         Ward.ProtocolStatus.CONFIRMED : Ward.ProtocolStatus.VAGUE
 
                         );
                     });
-                    return localBallotResult.getBallotResult();
+                    return localBallotResult.getValue();
                 })
                 .filter(Optional::isPresent)
                 .map(Optional::get)

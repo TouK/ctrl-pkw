@@ -37,14 +37,14 @@ class QuorumConsensusResultsSelectorTest extends Specification {
 
     def "should handle empty list"() {
         when:
-            Optional<Protocol> selected = selector.apply([])
+            Optional<BallotResult> selected = selector.apply([])
         then:
             !selected.isPresent()
     }
 
     def "should select any of coherent approved protocols"() {
         when:
-            Optional<Protocol> selected = selector.apply(coherentProtocols)
+            Optional<BallotResult> selected = selector.apply(coherentProtocols)
         then:
             selected.isPresent()
         where:
@@ -58,7 +58,7 @@ class QuorumConsensusResultsSelectorTest extends Specification {
     @Unroll
     def "should select if quorum is satisfied: #message"() {
         when:
-            Optional<Protocol> selected = selector.apply(protocols)
+            Optional<BallotResult> selected = selector.apply(protocols)
         then:
             selected.isPresent() == isPresent
         where:
