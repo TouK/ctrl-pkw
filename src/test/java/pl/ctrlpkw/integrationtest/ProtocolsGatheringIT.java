@@ -1,7 +1,6 @@
 package pl.ctrlpkw.integrationtest;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +14,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
-import org.springframework.shell.support.util.FileUtils;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.HttpClientErrorException;
@@ -24,13 +22,11 @@ import pl.ctrlpkw.api.dto.BallotResult;
 import pl.ctrlpkw.api.dto.Protocol;
 import pl.ctrlpkw.api.dto.Ward;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.contentOf;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = { Application.class} )
@@ -38,19 +34,12 @@ import static org.assertj.core.api.Assertions.contentOf;
 @Slf4j
 public class ProtocolsGatheringIT extends IntegrationTestBase {
 
-    public static final String PROTOCOLS_URL = "http://localhost:{port}/api/protocols";
-    public static final String RESULT_URL = "http://localhost:{port}/api/votings/{votingDate}/ballots/{ballotNo}/result";
-    public static final String WARDS_URL = "http://localhost:{serverPort}/api/votings/{votingDate}/wards/{communityCode}/{wardNo}";
-
-
-    @Value("${local.server.port}")
-    private String serverPort;
-
     @Value("${test.protocolsGathering.shortRun:true}")
     private boolean shortRun;
 
     @Test
     public void shouldAcceptProtocolsCountVotesAndSetProtocolStatusesInWards() throws Exception {
+        givenEmptyResultsCache();
         givenNoProtocolsInDatabase();
         whenFirstRound2010ProtocolsSent();
         whenVotesCountingRequested();
@@ -61,14 +50,6 @@ public class ProtocolsGatheringIT extends IntegrationTestBase {
         thenAllWardsHaveProtocolStatus(Ward.ProtocolStatus.CONFIRMED);
 
         thenResultsAreSameAsIn2010();
-    }
-
-    protected void givenNoProtocolsInDatabase() {
-        File schemaScript = FileUtils.getFile(Application.class, "/schema.cql");
-        Arrays.stream(contentOf(schemaScript).split(";"))
-                .map(StringUtils::trim)
-                .filter(StringUtils::isNotEmpty)
-                .forEach(line -> cassandraContext.getSession().execute(line));
     }
 
     protected void whenFirstRound2010ProtocolsSent() throws Exception {
@@ -109,8 +90,7 @@ public class ProtocolsGatheringIT extends IntegrationTestBase {
             String communityCode = item.readString(2);
             int wardNo = item.readInt(6);
             try {
-                Ward ward = restTemplate.getForObject(WARDS_URL, Ward.class, serverPort, "2010-06-20", communityCode, wardNo);
-                assertThat(ward.getProtocolStatus()).isEqualTo(status);
+                thenWardHasProtocolStatus(communityCode, wardNo, status);
             } catch (HttpClientErrorException ex) {
                 if (ex.getStatusCode() != HttpStatus.NOT_FOUND) {
                     throw ex;
@@ -120,10 +100,6 @@ public class ProtocolsGatheringIT extends IntegrationTestBase {
             }
         }
         reader.close();
-    }
-
-    protected void whenVotesCountingRequested() {
-        restTemplate.postForObject(RESULT_URL, null, BallotResult.class, serverPort, "2010-06-20", 1);
     }
 
     protected void thenResultsAreSameAsIn2010() {

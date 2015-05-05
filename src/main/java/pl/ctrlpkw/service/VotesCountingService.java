@@ -70,7 +70,7 @@ public class VotesCountingService {
             executorService.shutdown();
             log.info("Waitng for cache tasks to finish...");
             if (executorService.awaitTermination(15, TimeUnit.MINUTES)) {
-                log.warn("Finished.");
+                log.info("Finished.");
             } else {
                 log.warn("Timed out.");
             }

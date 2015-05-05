@@ -6,6 +6,7 @@ import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.Frozen;
 import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.datastax.driver.mapping.annotations.Table;
+import io.jsonwebtoken.lang.Collections;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -89,14 +90,14 @@ public class Protocol {
 
     public boolean isApproved() {
         return verified
-                && !approvals.isEmpty()
-                && deprecations.isEmpty();
+                && !Collections.isEmpty(approvals)
+                && Collections.isEmpty(deprecations);
 
     }
 
     public boolean isNotDeprecated() {
         return !verified
-                || deprecations.isEmpty();
+                || Collections.isEmpty(deprecations);
 
     }
 

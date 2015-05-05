@@ -51,6 +51,10 @@ public class Application {
         return new ComparableVersion(value);
     }
 
+    public boolean stormpathEnabled(@Value("${stormpath.enabled:false}") boolean flag) {
+        return flag;
+    }
+
     @Bean
     @Primary
     public CacheManager cacheManager() {

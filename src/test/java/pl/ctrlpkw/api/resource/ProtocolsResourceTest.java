@@ -43,6 +43,9 @@ public class ProtocolsResourceTest {
     private Mapper<pl.ctrlpkw.model.write.Protocol> protocolMapper;
 
     @Mock
+    private Mapper<pl.ctrlpkw.model.write.ProtocolIndex> protocolIndexMapper;
+
+    @Mock
     private ProtocolAccessor protocolAccessor;
 
     @InjectMocks
@@ -80,6 +83,21 @@ public class ProtocolsResourceTest {
         PictureUploadToken pictureUploadToken = (PictureUploadToken) response.getEntity();
 
         //then
+        verify(protocolIndexMapper).save(
+                pl.ctrlpkw.model.write.ProtocolIndex.builder()
+                        .id(any(UUID.class))
+                        .ballot(Ballot.builder()
+                                        .votingDate(protocol.getVotingDate().toDate())
+                                        .no(protocol.getBallotNo())
+                                        .build()
+                        )
+                        .ward(Ward.builder()
+                                        .communityCode(protocol.getCommunityCode())
+                                        .no(protocol.getWardNo())
+                                        .build()
+                        )
+                        .build()
+        );
         verify(protocolMapper).save(
                 pl.ctrlpkw.model.write.Protocol.builder()
                         .id(any(UUID.class))

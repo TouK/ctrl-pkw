@@ -12,7 +12,6 @@ import pl.ctrlpkw.api.resource.BallotsResource;
 import pl.ctrlpkw.api.resource.VotingResource;
 import pl.ctrlpkw.api.resource.WardsResource;
 
-import javax.ws.rs.core.Link;
 import java.util.List;
 
 @ApiModel
@@ -31,6 +30,6 @@ public class Voting {
             @InjectLink(resource = BallotsResource.class, rel = "ballots", method = "readAll", style = InjectLink.Style.ABSOLUTE),
             @InjectLink(resource = WardsResource.class, rel = "wards", method = "readAll", style = InjectLink.Style.ABSOLUTE)
     })
-    private List<Link> links;
+    private List links;
 
 }

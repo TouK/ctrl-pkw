@@ -18,8 +18,8 @@ public interface ProtocolAccessor {
     @Query("SELECT * FROM ctrl_pkw.protocol where ballot = :ballot")
     public Result<Protocol> findByBallot(@Param("ballot") Ballot ballot);
 
-    @Query("SELECT * FROM ctrl_pkw.protocol where id = :id limit 1")
-    public Protocol findById(@Param("id") UUID id);
+    @Query("SELECT * FROM ctrl_pkw.protocol_index where id = :id limit 1")
+    public ProtocolIndex findById(@Param("id") UUID id);
 
     @Query("UPDATE ctrl_pkw.protocol SET approvals = approvals + :username, is_verified = true, update_time = dateof(now()) WHERE ward = :ward AND ballot = :ballot AND id = :id")
     public ResultSet addApproval(@Param("ward") Ward ward, @Param("ballot") Ballot ballot, @Param("id") UUID id, @Param("username") Set<String> username);

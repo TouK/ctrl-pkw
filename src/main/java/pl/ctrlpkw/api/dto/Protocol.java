@@ -16,7 +16,6 @@ import pl.ctrlpkw.api.resource.ProtocolsResource;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.Link;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,6 +56,6 @@ public class Protocol {
             @InjectLink(resource = ProtocolsResource.class, rel = "images", method = "listImages", style = InjectLink.Style.ABSOLUTE),
 
     })
-    private List<Link> links;
+    private List links;
 
 }

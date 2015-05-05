@@ -36,3 +36,10 @@ CREATE TABLE protocol (
 CREATE INDEX protocol_id_idx ON protocol (id) ;
 CREATE INDEX protocol_ballot_idx ON protocol (ballot) ;
 CREATE INDEX protocol_is_verified_idx ON protocol (is_verified) ;
+
+CREATE TABLE protocol_index (
+    id uuid,
+    ballot frozen<ballot>,
+    ward frozen<ward>,
+    PRIMARY KEY (id)
+);

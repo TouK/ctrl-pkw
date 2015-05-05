@@ -3,7 +3,6 @@ package pl.ctrlpkw.integrationtest;
 import com.google.common.collect.Iterators;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class WardsGeolocalizationIT extends IntegrationTestBase {
 
     public static final String WARDS_URL = "http://localhost:{serverPort}/api/votings/{votingDatew}/wards?latitude={latitude}&longitude={longitude}&radius={radius}&minCount={minCount}";
-
-    @Value("${local.server.port}")
-    private String serverPort;
 
     @Resource
     private WardRepository wardRepository;

@@ -13,7 +13,6 @@ import org.joda.time.LocalDate;
 import pl.ctrlpkw.api.resource.BallotsResource;
 import pl.ctrlpkw.api.resource.ResultsResource;
 
-import javax.ws.rs.core.Link;
 import java.util.List;
 
 @ApiModel
@@ -43,7 +42,7 @@ public class Ballot {
                 }
     )
     })
-    private List<Link> links;
+    private List links;
 
 
 }

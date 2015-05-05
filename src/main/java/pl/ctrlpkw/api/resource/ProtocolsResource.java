@@ -24,6 +24,7 @@ import pl.ctrlpkw.api.filter.ClientVersionCheck;
 import pl.ctrlpkw.model.write.Ballot;
 import pl.ctrlpkw.model.write.Protocol;
 import pl.ctrlpkw.model.write.ProtocolAccessor;
+import pl.ctrlpkw.model.write.ProtocolIndex;
 import pl.ctrlpkw.model.write.Ward;
 
 import javax.annotation.Resource;
@@ -62,8 +63,11 @@ public class ProtocolsResource {
 
     public static final String CLIENT_ID_HEADER = "Ctrl-PKW-Client-Id";
 
-    @Resource
+    @Resource(name = "protocolMapperFactory")
     private Mapper<Protocol> protocolMapper;
+
+    @Resource(name = "protocolIndexMapperFactory")
+    private Mapper<ProtocolIndex> protocolIndexMapper;
 
     @Resource
     private ProtocolAccessor protocolAccessor;
@@ -107,6 +111,13 @@ public class ProtocolsResource {
             protocol.setCloudinaryCloudName(cloudinary.config.cloudName);
         }
 
+
+        protocolIndexMapper.save(ProtocolIndex.builder()
+                        .id(protocol.getId())
+                        .ballot(protocol.getBallot())
+                        .ward(protocol.getWard())
+                        .build()
+        );
         protocolMapper.save(protocol);
 
         return pictureUploadToken.isPresent() ?
@@ -127,7 +138,12 @@ public class ProtocolsResource {
     @GET
     @Path("{id}")
     public pl.ctrlpkw.api.dto.Protocol readOne(@ApiParam @PathParam("id") UUID id) {
-        Protocol protocol = protocolAccessor.findById(id);
+        ProtocolIndex protocolIndex = protocolAccessor.findById(id);
+        Protocol protocol = protocolMapper.get(
+                protocolMapper.getManager().udtMapper(Ward.class).toUDT(protocolIndex.getWard()),
+                protocolMapper.getManager().udtMapper(Ballot.class).toUDT(protocolIndex.getBallot()),
+                id
+        );
         return entityToDto.apply(protocol);
     }
 
@@ -135,7 +151,12 @@ public class ProtocolsResource {
     @GET
     @Path("{id}/image")
     public Collection<URI> listImages(@ApiParam @PathParam("id") UUID id) {
-        Protocol protocol = protocolAccessor.findById(id);
+        ProtocolIndex protocolIndex = protocolAccessor.findById(id);
+        Protocol protocol = protocolMapper.get(
+                protocolMapper.getManager().udtMapper(Ward.class).toUDT(protocolIndex.getWard()),
+                protocolMapper.getManager().udtMapper(Ballot.class).toUDT(protocolIndex.getBallot()),
+                id
+        );
         return Optional.ofNullable(protocol.getImageIds()).orElse(Collections.<UUID>emptySet()).stream()
                 .map(publicId -> URI.create("http://res.cloudinary.com/" + protocol.getCloudinaryCloudName() + "/image/upload/" + publicId))
                 .collect(Collectors.toSet());
@@ -147,7 +168,12 @@ public class ProtocolsResource {
     @Path("{id}/image")
     public Response authorizeNextImage(@ApiParam @PathParam("id") UUID id) {
 
-        Protocol protocol = protocolAccessor.findById(id);
+        ProtocolIndex protocolIndex = protocolAccessor.findById(id);
+        Protocol protocol = protocolMapper.get(
+                protocolMapper.getManager().udtMapper(Ward.class).toUDT(protocolIndex.getWard()),
+                protocolMapper.getManager().udtMapper(Ballot.class).toUDT(protocolIndex.getBallot()),
+                id
+        );
         if (protocol == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -173,16 +199,24 @@ public class ProtocolsResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response verify(@Context HttpServletRequest servletRequest, @ApiParam @PathParam("id") UUID id, @ApiParam(required = true, allowableValues = "\"APPROVAL\", \"DEPRECATION\"") @NotNull @Valid VerificationResult result) {
         Account account = AccountResolver.INSTANCE.getAccount(servletRequest);
-        Protocol protocol = protocolAccessor.findById(id);
+        ProtocolIndex protocolIndex = protocolAccessor.findById(id);
+        Protocol protocol = protocolMapper.get(
+                protocolMapper.getManager().udtMapper(Ward.class).toUDT(protocolIndex.getWard()),
+                protocolMapper.getManager().udtMapper(Ballot.class).toUDT(protocolIndex.getBallot()),
+                id
+        );
         if (protocol == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        String username = account == null ? "unknown" : account.getUsername();
         switch (result) {
             case APPROVAL:
-                protocolAccessor.addApproval(protocol.getWard(), protocol.getBallot(), id, Sets.newHashSet(account.getUsername()));
+                protocolAccessor.addApproval(protocol.getWard(), protocol.getBallot(), id, Sets.newHashSet(username));
+                break;
             case DEPRECATION:
-                protocolAccessor.addDeprecation(protocol.getWard(), protocol.getBallot(), id, Sets.newHashSet(account.getUsername()));
+                protocolAccessor.addDeprecation(protocol.getWard(), protocol.getBallot(), id, Sets.newHashSet(username));
+                break;
         }
         return Response.ok(protocol).build();
     }
