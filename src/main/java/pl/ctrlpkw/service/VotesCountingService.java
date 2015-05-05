@@ -7,7 +7,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.LocalDate;
 import org.springframework.stereotype.Service;
 import pl.ctrlpkw.api.dto.BallotResult;
-import pl.ctrlpkw.api.dto.Ward;
 import pl.ctrlpkw.model.read.Ballot;
 import pl.ctrlpkw.model.write.Protocol;
 import pl.ctrlpkw.model.write.ProtocolAccessor;
@@ -54,11 +53,10 @@ public class VotesCountingService {
                     executorService.execute(() -> {
                         wardStateProvider.save(
                                 LocalDate.fromDateFields(ballot.getVotingDate()),
+                                ballot.getNo(),
                                 localBallotResult.getKey().getCommunityCode(),
                                 localBallotResult.getKey().getNo(),
-                                localBallotResult.getValue().isPresent() ?
-                                        Ward.ProtocolStatus.CONFIRMED : Ward.ProtocolStatus.VAGUE
-
+                                localBallotResult.getValue().orElse(BallotResult.builder().build())
                         );
                     });
                     return localBallotResult.getValue();

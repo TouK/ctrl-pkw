@@ -125,6 +125,7 @@ public class ProtocolsGatheringIT extends EmbeddedCassandraIT {
             int wardNo = item.readInt(6);
             try {
                 Ward ward = restTemplate.getForObject(WARDS_URL, Ward.class, serverPort, "2010-06-20", communityCode, wardNo);
+                assertThat(ward.getProtocolStatus()).isEqualTo(status);
             } catch (HttpClientErrorException ex) {
                 if (ex.getStatusCode() != HttpStatus.NOT_FOUND) {
                     throw ex;

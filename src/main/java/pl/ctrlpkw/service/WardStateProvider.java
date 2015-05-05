@@ -3,25 +3,33 @@ package pl.ctrlpkw.service;
 import org.joda.time.LocalDate;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import pl.ctrlpkw.api.dto.BallotResult;
+
+import javax.annotation.Resource;
 
 @Service
 public class WardStateProvider {
 
+    @Resource
+    RedisTemplate redisTemplate;
+
+
     @CachePut(
             value="localResults", cacheManager = "redisCacheManager",
-            key = "#votingDate.toString() + ':' + #communityCode + ':' + #wardNo")
-    public pl.ctrlpkw.api.dto.Ward.ProtocolStatus save(
-            LocalDate votingDate, String communityCode, Integer wardNo, pl.ctrlpkw.api.dto.Ward.ProtocolStatus status) {
-        return status;
+            key = "#votingDate.toString() + ':' + #ballotNo + ':' + #communityCode + ':' + #wardNo")
+    public BallotResult save(
+            LocalDate votingDate, Integer ballotNo, String communityCode, Integer wardNo, BallotResult localResult) {
+        return localResult;
     }
 
     @Cacheable(
             value="localResults", cacheManager = "redisCacheManager",
-            key = "#votingDate.toString() + ':' + #communityCode + ':' + #wardNo")
-    public pl.ctrlpkw.api.dto.Ward.ProtocolStatus read(
-            LocalDate votingDate, String communityCode, Integer wardNo) {
-        return pl.ctrlpkw.api.dto.Ward.ProtocolStatus.LACK;
+            key = "#votingDate.toString() + ':' + #ballotNo + ':' + #communityCode + ':' + #wardNo")
+    public BallotResult read(
+            LocalDate votingDate, Integer ballotNo, String communityCode, Integer wardNo) {
+        return null;
     }
 
 }

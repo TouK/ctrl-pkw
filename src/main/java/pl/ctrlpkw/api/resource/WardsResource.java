@@ -9,6 +9,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import org.joda.time.LocalDate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
+import pl.ctrlpkw.api.dto.BallotResult;
 import pl.ctrlpkw.api.dto.Location;
 import pl.ctrlpkw.api.filter.ClientVersionCheck;
 import pl.ctrlpkw.model.read.Voting;
@@ -70,10 +71,10 @@ public class WardsResource {
                 getAllWardsWithinRadiusAndTopUpWithClosestIfAtLeastMinCountNotFound(
                         voting, location, radius, minCount
                 ).spliterator(), false)
-                .map(entityToDto)
-                .map(wardDto -> {
+                .map(ward -> {
+                    pl.ctrlpkw.api.dto.Ward wardDto = entityToDto.apply(ward);
                     wardDto.setProtocolStatus(
-                            wardStateProvider.read(voting.getDate(), wardDto.getCommunityCode(), wardDto.getNo())
+                            retrieveProtocolStatus(voting, ward)
                     );
                     return wardDto;
                 })
@@ -98,9 +99,20 @@ public class WardsResource {
 
         pl.ctrlpkw.api.dto.Ward wardDto = entityToDto.apply(ward);
         wardDto.setProtocolStatus(
-                wardStateProvider.read(voting.getDate(), wardDto.getCommunityCode(), wardDto.getNo())
+                retrieveProtocolStatus(voting, ward)
         );
         return wardDto;
+    }
+
+    private pl.ctrlpkw.api.dto.Ward.ProtocolStatus retrieveProtocolStatus(Voting voting, Ward ward) {
+        BallotResult result = wardStateProvider.read(voting.getDate(), 1, ward.getCommunityCode(), ward.getWardNo());
+        if (result == null)
+            return pl.ctrlpkw.api.dto.Ward.ProtocolStatus.LACK;
+        else if (result.getVotesCountPerOption() == null)
+            return pl.ctrlpkw.api.dto.Ward.ProtocolStatus.VAGUE;
+        else
+            return pl.ctrlpkw.api.dto.Ward.ProtocolStatus.CONFIRMED;
+
     }
 
     private Iterable<Ward> getAllWardsWithinRadiusAndTopUpWithClosestIfAtLeastMinCountNotFound(

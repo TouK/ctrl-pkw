@@ -27,7 +27,9 @@ import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import pl.ctrlpkw.api.dto.BallotResult;
 
 import javax.ws.rs.ApplicationPath;
 import java.util.Arrays;
@@ -65,6 +67,7 @@ public class Application {
         RedisTemplate<String, String> redisTemplate = new RedisTemplate<String, String>();
         redisTemplate.setConnectionFactory(cf);
         redisTemplate.setKeySerializer(redisTemplate.getStringSerializer());
+        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer(BallotResult.class));
         return redisTemplate;
     }
 
