@@ -21,12 +21,12 @@ public interface ProtocolAccessor {
     @Query("SELECT * FROM ctrl_pkw.protocol where id = :id limit 1")
     public Protocol findById(@Param("id") UUID id);
 
-    @Query("UPDATE ctrl_pkw.protocol SET approvals = approvals + :username, is_verified = true, update_time = datof(now()) WHERE ward = :ward AND ballot = :ballot AND id = :id")
+    @Query("UPDATE ctrl_pkw.protocol SET approvals = approvals + :username, is_verified = true WHERE ward = :ward AND ballot = :ballot AND id = :id")
     public ResultSet addApproval(@Param("ward") Ward ward, @Param("ballot") Ballot ballot, @Param("id") UUID id, @Param("username") Set<String> username);
 
-    @Query("UPDATE ctrl_pkw.protocol SET deprecations = deprecations + :username, is_verified = true, update_time = datof(now()) WHERE ward = :ward AND ballot = :ballot AND id = :id")
+    @Query("UPDATE ctrl_pkw.protocol SET deprecations = deprecations + :username, is_verified = true WHERE ward = :ward AND ballot = :ballot AND id = :id")
     public ResultSet addDeprecation(@Param("ward") Ward ward, @Param("ballot") Ballot ballot, @Param("id") UUID id, @Param("username") Set<String> username);
 
-    @Query("UPDATE ctrl_pkw.protocol SET imaage_ids = image_ids + :imageId, update_time = datof(now()) WHERE ward = :ward AND ballot = :ballot AND id = :id")
-    void addImageId(@Param("ward") Ward ward, @Param("ballot") Ballot ballot, @Param("id") UUID id, @Param("imageId") Set<UUID> imageId);
+    @Query("UPDATE ctrl_pkw.protocol SET image_ids = image_ids + :imageId WHERE ward = :ward AND ballot = :ballot AND id = :id")
+    public ResultSet addImageId(@Param("ward") Ward ward, @Param("ballot") Ballot ballot, @Param("id") UUID id, @Param("imageId") Set<UUID> imageId);
 }
