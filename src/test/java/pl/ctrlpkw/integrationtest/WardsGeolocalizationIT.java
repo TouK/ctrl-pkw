@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.TestRestTemplate;
 import org.springframework.data.domain.PageRequest;
@@ -25,8 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
 @WebAppConfiguration
-@IntegrationTest({"server.port:0", EmbeddedCassandraIT.CASSANDRA_CONFIG})
-public class WardsGeolocalizationIT extends EmbeddedCassandraIT {
+public class WardsGeolocalizationIT extends IntegrationTestBase {
 
     public static final String WARDS_URL = "http://localhost:{serverPort}/api/votings/{votingDatew}/wards?latitude={latitude}&longitude={longitude}&radius={radius}&minCount={minCount}";
 
@@ -58,7 +56,7 @@ public class WardsGeolocalizationIT extends EmbeddedCassandraIT {
 
         //then
         assertThat(
-                Iterators.<Ward>any(Arrays.asList(closestWards.getBody()).iterator(), input ->
+                Iterators.any(Arrays.asList(closestWards.getBody()).iterator(), input ->
                                 ward.getCommunityCode().equals(input.getCommunityCode())
                                         && ward.getWardNo().equals(input.getNo())
                 )).isTrue();

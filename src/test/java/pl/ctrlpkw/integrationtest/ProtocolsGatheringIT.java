@@ -13,7 +13,6 @@ import org.springframework.batch.item.file.mapping.PassThroughFieldSetMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.batch.item.file.transform.FieldSet;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
@@ -39,9 +38,8 @@ import static org.assertj.core.api.Assertions.contentOf;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = { Application.class} )
 @WebAppConfiguration
-@IntegrationTest({"server.port:0", EmbeddedCassandraIT.CASSANDRA_CONFIG})
 @Slf4j
-public class ProtocolsGatheringIT extends EmbeddedCassandraIT {
+public class ProtocolsGatheringIT extends IntegrationTestBase {
 
     public static final String PROTOCOLS_URL = "http://localhost:{port}/api/protocols";
     public static final String RESULT_URL = "http://localhost:{port}/api/votings/{votingDate}/ballots/{ballotNo}/result";
