@@ -1,17 +1,14 @@
 package pl.ctrlpkw.integrationtest;
 
 import com.google.common.collect.Iterators;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.TestRestTemplate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.web.client.RestTemplate;
 import pl.ctrlpkw.Application;
 import pl.ctrlpkw.api.dto.Ward;
 import pl.ctrlpkw.model.read.WardRepository;
@@ -33,16 +30,6 @@ public class WardsGeolocalizationIT extends IntegrationTestBase {
 
     @Resource
     private WardRepository wardRepository;
-
-    private RestTemplate restTemplate = new TestRestTemplate();
-
-    @Resource
-    private ClientVersionHeaderInterceptor clientVersionHeaderInterceptor;
-
-    @Before
-    public void addRestTemplateInterceptor() {
-        restTemplate.getInterceptors().add(clientVersionHeaderInterceptor);
-    }
 
     @Test
     public void shouldReturnWardWhenGivenExactLocation() throws InterruptedException {
