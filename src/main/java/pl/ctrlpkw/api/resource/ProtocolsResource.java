@@ -95,13 +95,22 @@ public class ProtocolsResource {
             protocol.setApprovals(Collections.singleton(account.getUsername()));
         }
 
-        Optional<Object> pictureUploadToken = Optional.ofNullable(
-                cloudinary.config.apiKey != null && authorizePictureUpload? authorizePictureUpload(protocol) : null
+        Optional<PictureUploadToken> pictureUploadToken = Optional.ofNullable(
+                cloudinary.config.apiKey != null && authorizePictureUpload? authorizePictureUpload() : null
         );
+
+        if (pictureUploadToken.isPresent()) {
+            if (protocol.getImageIds() == null) {
+                protocol.setImageIds(Sets.newHashSet());
+            }
+            protocol.getImageIds().add(pictureUploadToken.get().getPublicId());
+            protocol.setCloudinaryCloudName(cloudinary.config.cloudName);
+        }
 
         protocolMapper.save(protocol);
 
-        return Response.ok(pictureUploadToken.orElse(entityToDto.apply(protocol))).build();
+        return pictureUploadToken.isPresent() ?
+                Response.ok(pictureUploadToken.get()).build() : Response.ok(entityToDto.apply(protocol)).build();
     }
 
     @ApiOperation("")
@@ -147,9 +156,10 @@ public class ProtocolsResource {
             Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
         }
 
-        PictureUploadToken pictureUploadToken = authorizePictureUpload(protocol);
-        protocol.setUpdateTime(new Date());
-        protocolMapper.save(protocol);
+        PictureUploadToken pictureUploadToken = authorizePictureUpload();
+
+        protocolAccessor.addImageId(protocol.getWard(), protocol.getBallot(), id, Sets.newHashSet(pictureUploadToken.getPublicId()));
+
         return Response.ok(pictureUploadToken).build();
 
     }
@@ -170,22 +180,14 @@ public class ProtocolsResource {
 
         switch (result) {
             case APPROVAL:
-                if (protocol.getApprovals() == null) {
-                    protocol.setApprovals(Sets.newHashSet());
-                }
-                protocol.getApprovals().add(account.getUsername());
+                protocolAccessor.addApproval(protocol.getWard(), protocol.getBallot(), id, Sets.newHashSet(account.getUsername()));
             case DEPRECATION:
-                if (protocol.getDeprecations() == null) {
-                    protocol.setDeprecations(Sets.newHashSet());
-                }
-                protocol.getDeprecations().add(account.getUsername());
+                protocolAccessor.addDeprecation(protocol.getWard(), protocol.getBallot(), id, Sets.newHashSet(account.getUsername()));
         }
-            protocol.setUpdateTime(new Date());
-        protocolMapper.save(protocol);
         return Response.ok(protocol).build();
     }
 
-    private PictureUploadToken authorizePictureUpload(Protocol protocol) {
+    private PictureUploadToken authorizePictureUpload() {
 
         UUID publicId = UUID.randomUUID();
         int timestamp = (int) (System.currentTimeMillis() / 1000L);
@@ -196,12 +198,6 @@ public class ProtocolsResource {
                         "timestamp", timestamp),
                 cloudinary.config.apiSecret
         );
-
-        if (protocol.getImageIds() == null) {
-            protocol.setImageIds(Sets.newHashSet());
-        }
-        protocol.getImageIds().add(publicId);
-        protocol.setCloudinaryCloudName(cloudinary.config.cloudName);
 
         return PictureUploadToken.builder()
                 .apiKey(cloudinary.config.apiKey)
