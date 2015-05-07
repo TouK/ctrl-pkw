@@ -10,9 +10,11 @@ import pl.ctrlpkw.model.write.Protocol;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
@@ -52,6 +54,10 @@ public class QuorumConsensusResultsSelector implements ResultsSelector {
     private Optional<BallotResult> retrieveBestResultIfItSatisfiesQuorum(List<Protocol> protocols) {
         return protocols.stream()
                 .filter(Protocol::isNotDeprecated)
+                .collect(groupingBy(protocol -> String.valueOf(protocol.getClientId()), Collectors.toList()))
+                .values().stream()
+                .peek(sameClientProtocols -> Collections.sort(sameClientProtocols, (p1, p2) -> p1.getCreationTime().compareTo(p2.getCreationTime())))
+                .map(sameClientProtocols -> sameClientProtocols.get(0))
                 .collect(groupingBy(resultFromProtocol, counting()))
                 .entrySet().stream()
                 .map(BestResultHolder::new)

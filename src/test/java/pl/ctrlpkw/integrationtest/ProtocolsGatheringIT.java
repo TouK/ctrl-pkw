@@ -13,6 +13,8 @@ import org.springframework.batch.item.file.transform.FieldSet;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -21,8 +23,10 @@ import pl.ctrlpkw.Application;
 import pl.ctrlpkw.api.dto.BallotResult;
 import pl.ctrlpkw.api.dto.Protocol;
 import pl.ctrlpkw.api.dto.Ward;
+import pl.ctrlpkw.api.resource.ProtocolsResource;
 
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -41,23 +45,30 @@ public class ProtocolsGatheringIT extends IntegrationTestBase {
     public void shouldAcceptProtocolsCountVotesAndSetProtocolStatusesInWards() throws Exception {
         givenEmptyResultsCache();
         givenNoProtocolsInDatabase();
-        whenFirstRound2010ProtocolsSent();
+        String firstClientId = UUID.randomUUID().toString();
+        String secondClientId = null;
+
+        whenFirstRound2010ProtocolsSent(firstClientId);
+        whenFirstRound2010ProtocolsSent(firstClientId);//again
         whenVotesCountingRequested();
         thenAllWardsHaveProtocolStatus(Ward.ProtocolStatus.VAGUE);
 
-        whenFirstRound2010ProtocolsSent();//again
+        whenFirstRound2010ProtocolsSent(secondClientId);
         whenVotesCountingRequested();
         thenAllWardsHaveProtocolStatus(Ward.ProtocolStatus.CONFIRMED);
 
         thenResultsAreSameAsIn2010();
     }
 
-    protected void whenFirstRound2010ProtocolsSent() throws Exception {
+    protected void whenFirstRound2010ProtocolsSent(String clientId) throws Exception {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(ProtocolsResource.CLIENT_ID_HEADER, clientId);
         FlatFileItemReader<FieldSet> reader = createTestResultsReader();
         reader.open(new ExecutionContext());
         for (FieldSet item = reader.read(); item != null; item = reader.read()) {
             Protocol protocol = buildProtocolFromFieldSet(item);
-            restTemplate.postForEntity(PROTOCOLS_URL, protocol, Object.class, serverPort, "2010-06-20", 1);
+            HttpEntity<Protocol> entity = new HttpEntity<>(protocol, headers);
+            restTemplate.postForEntity(PROTOCOLS_URL, entity, Object.class, serverPort, "2010-06-20", 1);
         }
         reader.close();
     }

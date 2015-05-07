@@ -162,6 +162,8 @@ class QuorumConsensusResultsSelectorTest extends Specification {
                 .verified(false)
                 .votesCountPerOption([1, 2, 3])
                 .cloudinaryCloudName("image")
+                .creationTime(new Date())
+                .clientId(UUID.randomUUID().toString())
                 .build()
     }
 

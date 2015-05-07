@@ -14,6 +14,7 @@ import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 import com.wordnik.swagger.annotations.Authorization;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.springframework.stereotype.Component;
 import pl.ctrlpkw.api.constraint.VotesCountValid;
@@ -92,7 +93,7 @@ public class ProtocolsResource {
     ) {
 
         Protocol protocol = dtoToEntity.apply(protocolDto);
-        protocol.setClientId(clientId);
+        protocol.setClientId(StringUtils.isNotEmpty(clientId) ? clientId : servletRequest.getRemoteAddr());
 
         if (AccountResolver.INSTANCE.hasAccount(servletRequest)) {
             Account account = AccountResolver.INSTANCE.getAccount(servletRequest);
