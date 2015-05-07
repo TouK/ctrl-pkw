@@ -184,7 +184,7 @@ public class ProtocolsResource {
 
         PictureUploadToken pictureUploadToken = authorizePictureUpload();
 
-        protocolAccessor.addImageId(protocol.getWard(), protocol.getBallot(), id, Sets.newHashSet(pictureUploadToken.getPublicId()));
+        protocolAccessor.addImageId(protocol.getWard(), protocol.getBallot(), id, Optional.ofNullable(cloudinary.config.cloudName).orElse("unknown"), Sets.newHashSet(pictureUploadToken.getPublicId()));
 
         return Response.ok(pictureUploadToken).build();
 

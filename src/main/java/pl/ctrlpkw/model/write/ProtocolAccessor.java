@@ -27,6 +27,6 @@ public interface ProtocolAccessor {
     @Query("UPDATE ctrl_pkw.protocol SET deprecations = deprecations + :username, is_verified = true, update_time = dateof(now()) WHERE ward = :ward AND ballot = :ballot AND id = :id")
     public ResultSet addDeprecation(@Param("ward") Ward ward, @Param("ballot") Ballot ballot, @Param("id") UUID id, @Param("username") Set<String> username);
 
-    @Query("UPDATE ctrl_pkw.protocol SET image_ids = image_ids + :imageId, update_time = dateof(now()) WHERE ward = :ward AND ballot = :ballot AND id = :id")
-    public ResultSet addImageId(@Param("ward") Ward ward, @Param("ballot") Ballot ballot, @Param("id") UUID id, @Param("imageId") Set<UUID> imageId);
+    @Query("UPDATE ctrl_pkw.protocol SET image_ids = image_ids + :imageId, update_time = dateof(now()), cloudinary_cloud_name = :cloudinaryCloudName WHERE ward = :ward AND ballot = :ballot AND id = :id")
+    public ResultSet addImageId(@Param("ward") Ward ward, @Param("ballot") Ballot ballot, @Param("id") UUID id, @Param("cloudinaryCloudName") String cloudinaryCloudName, @Param("imageId") Set<UUID> imageId);
 }
