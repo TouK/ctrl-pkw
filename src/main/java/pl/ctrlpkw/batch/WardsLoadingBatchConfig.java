@@ -126,7 +126,7 @@ public class WardsLoadingBatchConfig {
                         item.readDouble(11),
                         item.readDouble(10)
                 )));
-                if (ward.getLocation().getY() < 49.00 || ward.getLocation().getY() > 54.83 || ward.getLocation().getX() < 14.12 || ward.getLocation().getX() > 24.13) {
+                if (ward.getLocation().getY() < 49.00 || ward.getLocation().getY() > 54.84 || ward.getLocation().getX() < 14.12 || ward.getLocation().getX() > 24.13) {
                     log.warn("Invalid coordinates of {} {} : {},{}", ward.getCommunityCode(), ward.getWardNo(), ward.getLocation().getY(), ward.getLocation().getX());
                     ward.setLocation(null);
                 }
