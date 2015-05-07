@@ -29,6 +29,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -79,7 +80,7 @@ public class WardsResource {
         if (minCount < minCountLowerLimit) minCount = minCountLowerLimit;
         if (radius > maxRadiusUpperLimit) radius = maxRadiusUpperLimit;
 
-        return geolocationService.getAllWardsWithinRadiusAndTopUpWithClosestIfAtLeastMinCountNotFound(
+        List<pl.ctrlpkw.api.dto.Ward> wards = geolocationService.getAllWardsWithinRadiusAndTopUpWithClosestIfAtLeastMinCountNotFound(
                 voting, location, radius, minCount, maxCount
         )
                 .map(ward -> {
@@ -90,6 +91,18 @@ public class WardsResource {
                     return wardDto;
                 })
                 .collect(Collectors.toList());
+
+        wards.add(pl.ctrlpkw.api.dto.Ward.builder()
+                        .communityCode(location.toText())
+                        .no(0)
+                        .label("Brakująca komisja wyborcza")
+                        .address("W miejscu, gdzie jestem")
+                        .location(Location.builder().latitude(location.getY()).longitude(location.getX()).build())
+                        .protocolStatus(pl.ctrlpkw.api.dto.Ward.ProtocolStatus.CONFIRMED)
+                        .build()
+        );
+
+        return wards;
     }
 
 
