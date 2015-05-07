@@ -1,13 +1,13 @@
 package pl.ctrlpkw.api.resource;
 
-import com.google.common.collect.Iterables;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.LocalDate;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import pl.ctrlpkw.api.dto.BallotResult;
 import pl.ctrlpkw.api.dto.Location;
@@ -16,6 +16,7 @@ import pl.ctrlpkw.model.read.Voting;
 import pl.ctrlpkw.model.read.VotingRepository;
 import pl.ctrlpkw.model.read.Ward;
 import pl.ctrlpkw.model.read.WardRepository;
+import pl.ctrlpkw.service.GeolocationService;
 import pl.ctrlpkw.service.WardStateProvider;
 
 import javax.annotation.Resource;
@@ -28,17 +29,15 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import java.util.Collection;
-import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Api("Obwody")
 @Path("/votings/{date}/wards")
 @Produces(MediaType.APPLICATION_JSON)
 @Component
 @ClientVersionCheck
+@Slf4j
 public class WardsResource {
 
     @Resource
@@ -48,10 +47,19 @@ public class WardsResource {
     private WardRepository wardRepository;
 
     @Resource
+    private GeolocationService geolocationService;
+
+    @Resource
     private VotingRepository votingRepository;
 
     @Resource
     private WardStateProvider wardStateProvider;
+
+    @Value("${wards.maxRadiusUpperLimit:25000}")
+    private double maxRadiusUpperLimit;
+
+    @Value("${wards.minCountLowerLimit:8}")
+    private short minCountLowerLimit;
 
     @ApiOperation(value = "Pobranie obwodów, których lokale wyborcze są nabliższe podanej lokalizacji", response = pl.ctrlpkw.api.dto.Ward.class, responseContainer = "List")
     @GET
@@ -60,17 +68,20 @@ public class WardsResource {
             @QueryParam("latitude") @NotNull Double latidude,
             @QueryParam("longitude") @NotNull Double longitude,
             @QueryParam("radius") @DefaultValue("4000") double radius,
-            @QueryParam("minCount") @DefaultValue("3") short minCount)
+            @QueryParam("minCount") @DefaultValue("8") short minCount,
+            @QueryParam("maxCount") @DefaultValue("100") short maxCount)
     {
         Voting voting = votingRepository.findByDate(LocalDate.parse(votingDate));
         if (voting == null)
             throw new NotFoundException();
         Point location = geometryFactory.createPoint(new Coordinate(longitude, latidude));
 
-        return StreamSupport.stream(
-                getAllWardsWithinRadiusAndTopUpWithClosestIfAtLeastMinCountNotFound(
-                        voting, location, radius, minCount
-                ).spliterator(), false)
+        if (minCount < minCountLowerLimit) minCount = minCountLowerLimit;
+        if (radius > maxRadiusUpperLimit) radius = maxRadiusUpperLimit;
+
+        return geolocationService.getAllWardsWithinRadiusAndTopUpWithClosestIfAtLeastMinCountNotFound(
+                voting, location, radius, minCount, maxCount
+        )
                 .map(ward -> {
                     pl.ctrlpkw.api.dto.Ward wardDto = entityToDto.apply(ward);
                     wardDto.setProtocolStatus(
@@ -113,27 +124,6 @@ public class WardsResource {
         else
             return pl.ctrlpkw.api.dto.Ward.ProtocolStatus.CONFIRMED;
 
-    }
-
-    private Iterable<Ward> getAllWardsWithinRadiusAndTopUpWithClosestIfAtLeastMinCountNotFound(
-            Voting voting, Point location, double radius, short minCount
-    ) {
-        Collection<Ward> wardsWithinRadius = wardRepository.findWithinRadiusAndOrderByDistance(
-                voting, location, radius
-        );
-        if (minCount <= wardsWithinRadius.size()) {
-            return wardsWithinRadius;
-        } else {
-            List<Ward> closestMinCountWards = wardRepository.findOrderedByDistance(
-                    voting, location, new PageRequest(0, minCount)
-            ).getContent();
-            if (closestMinCountWards.size() == 0) {
-                throw new NotFoundException();
-            }
-            Point minCountThWardLocation =
-                    Iterables.getLast(closestMinCountWards).getLocation();
-            return wardRepository.findCloserThanAndOrderByDistance(voting, location, minCountThWardLocation);
-        }
     }
 
     private static Function<Ward, pl.ctrlpkw.api.dto.Ward> entityToDto = entity ->

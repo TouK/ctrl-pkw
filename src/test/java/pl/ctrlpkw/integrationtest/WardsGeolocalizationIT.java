@@ -56,7 +56,8 @@ public class WardsGeolocalizationIT extends IntegrationTestBase {
         );
 
         //then
-        assertThat(closestWards.getBody().length).isEqualTo(2);
+        assertThat(closestWards.getBody().length).isGreaterThan(2);
+        assertThat(closestWards.getBody()[0].getLocation()).isEqualTo(closestWards.getBody()[0].getLocation());
     }
 
 }
