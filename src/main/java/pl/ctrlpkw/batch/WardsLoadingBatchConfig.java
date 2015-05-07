@@ -66,6 +66,7 @@ public class WardsLoadingBatchConfig {
             ward.setWardNo(item.readInt(6));
             ward.setWardAddress(item.readString(7));
             ward.setLabel("Obwodowa komisja wyborcza: " + item.readString(3).split(",", 2)[0] + " nr " + item.readString(6));
+            ward.setShortLabel("Komisja nr " + item.readString(6));
             if (item.getFieldCount() >= 15) {
                 ward.setLocation(geometryFactory.createPoint(new Coordinate(
                         item.readDouble(14),
@@ -115,10 +116,11 @@ public class WardsLoadingBatchConfig {
         return item -> {
             Ward ward = new Ward();
             ward.setVotings(votings);
-            ward.setCommunityCode(item.readString(2).substring(2,8));
+            ward.setCommunityCode(item.readString(2).substring(2, 8));
             ward.setWardNo(item.readInt(5));
             ward.setWardAddress(item.readString(6));
             ward.setLabel("Obwodowa komisja wyborcza: " + item.readString(3).split(",", 2)[0] + " nr " + item.readString(5));
+            ward.setShortLabel("Komisja nr " + item.readString(5));
             if (item.getFieldCount() >= 12) {
                 ward.setLocation(geometryFactory.createPoint(new Coordinate(
                         item.readDouble(11),
@@ -175,6 +177,7 @@ public class WardsLoadingBatchConfig {
             ward.setWardNo(item.readInt(0));
             ward.setWardAddress(item.readString(3) + " " + item.readString(4));
             ward.setLabel("Obwodowa komisja wyborcza za granicą nr " + item.readString(0) + " : " + item.readString(2));
+            ward.setShortLabel("Komisja nr " + item.readString(0));
             if (item.getFieldCount() >= 7) {
                 ward.setLocation(geometryFactory.createPoint(new Coordinate(
                         item.readDouble(6),

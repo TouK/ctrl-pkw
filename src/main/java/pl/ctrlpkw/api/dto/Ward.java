@@ -21,6 +21,7 @@ public class Ward {
     private String address;
     private Location location;
     private String label;
+    private String shortLabel;
 
     public enum ProtocolStatus { LACK, VAGUE, CONFIRMED };
     @ApiModelProperty(dataType = "string", allowableValues = "LACK, VAGUE, CONFIRMED")

@@ -31,5 +31,5 @@ public class Ward {
     private Point location;
 
     private String label;
-
+    private String shortLabel;
 }

@@ -95,7 +95,8 @@ public class WardsResource {
         wards.add(pl.ctrlpkw.api.dto.Ward.builder()
                         .communityCode(location.toText())
                         .no(0)
-                        .label("Brakująca komisja wyborcza")
+                        .label("Brakująca obwodowa komisja wyborcza")
+                        .shortLabel("Brakująca komisja")
                         .address("W miejscu, gdzie jestem")
                         .location(Location.builder().latitude(location.getY()).longitude(location.getX()).build())
                         .protocolStatus(pl.ctrlpkw.api.dto.Ward.ProtocolStatus.CONFIRMED)
@@ -149,6 +150,7 @@ public class WardsResource {
                                     : null
                     )
                     .label(entity.getLabel())
+                    .shortLabel(entity.getShortLabel())
                     .protocolStatus(pl.ctrlpkw.api.dto.Ward.ProtocolStatus.LACK)
                     .build();
 
