@@ -91,7 +91,7 @@ public class ResultsResource {
     @Path("communities/{communityCode}/ballots/{ballotNo}")
     @Cacheable(value = "communityResults")
     @Transactional
-    public CommunityBallotResult read(@PathParam("date") String votingDate, @PathParam("communityCode") String communityCode, @PathParam("ballotNo") Integer ballotNo) {
+    public CommunityBallotResult readPerCommunity(@PathParam("date") String votingDate, @PathParam("communityCode") String communityCode, @PathParam("ballotNo") Integer ballotNo) {
         Voting voting = votingRepository.findByDate(LocalDate.parse(votingDate));
         if (voting == null)
             throw new NotFoundException();
