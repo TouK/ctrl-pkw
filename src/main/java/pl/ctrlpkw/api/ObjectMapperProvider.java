@@ -31,7 +31,8 @@ public class ObjectMapperProvider implements ContextResolver<ObjectMapper> {
         mapper
                 .registerModule(simpleModule)
                 .registerModule(new JodaModule())
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .enable(SerializationFeature.WRITE_NULL_MAP_VALUES);
         return mapper;
     }
 

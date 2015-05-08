@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.contentOf;
 })
 public abstract class IntegrationTestBase {
 
-    public static final String RESULT_URL = "http://localhost:{port}/api/votings/{votingDate}/ballots/{ballotNo}/result";
+    public static final String RESULT_URL = "http://localhost:{port}/api/votings/{votingDate}/results/ballots/{ballotNo}";
     public static final String PROTOCOLS_URL = "http://localhost:{port}/api/protocols?authorizePictureUpload=false";
     public static final String VERIFICATIONS_URL = "http://localhost:{port}/api/protocols/{id}/verifications";
     public static final String IMAGES_URL = "http://localhost:{port}/api/protocols/{id}/image";

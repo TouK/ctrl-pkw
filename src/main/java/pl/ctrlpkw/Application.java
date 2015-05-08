@@ -34,6 +34,7 @@ import pl.ctrlpkw.api.dto.BallotResult;
 import javax.ws.rs.ApplicationPath;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @EnableCaching
@@ -60,8 +61,8 @@ public class Application {
     public CacheManager cacheManager() {
         GuavaCacheManager cacheManager = new GuavaCacheManager();
         cacheManager.setCacheBuilder(CacheBuilder.newBuilder()
-                //.expireAfterWrite(600, TimeUnit.SECONDS)
-                //.maximumSize(50000)
+                        .expireAfterWrite(300, TimeUnit.SECONDS)
+                        .maximumSize(50000)
         );
         return cacheManager;
     }

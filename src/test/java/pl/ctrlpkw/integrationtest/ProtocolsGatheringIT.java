@@ -49,9 +49,11 @@ public class ProtocolsGatheringIT extends IntegrationTestBase {
         String secondClientId = null;
 
         whenFirstRound2010ProtocolsSent(firstClientId);
-        whenFirstRound2010ProtocolsSent(firstClientId);//again
-        whenVotesCountingRequested();
-        thenAllWardsHaveProtocolStatus(Ward.ProtocolStatus.VAGUE);
+        if (shortRun) {
+            whenFirstRound2010ProtocolsSent(firstClientId);//again
+            whenVotesCountingRequested();
+            thenAllWardsHaveProtocolStatus(Ward.ProtocolStatus.VAGUE);
+        }
 
         whenFirstRound2010ProtocolsSent(secondClientId);
         whenVotesCountingRequested();

@@ -42,4 +42,7 @@ public interface WardRepository extends PagingAndSortingRepository<Ward, Long> {
     Collection<Ward> findCloserThanAndOrderByDistance(@Param("voting") Voting voting, @Param("point") Point point, @Param("distantPoint") Point distantPoint);
 
     Ward findByVotingsAndCommunityCodeAndWardNo(Voting voting, String communityCode, Integer wardNo);
+
+    Iterable<Ward> findByVotingsAndCommunityCode(Voting voting, String communityCode);
+
 }
