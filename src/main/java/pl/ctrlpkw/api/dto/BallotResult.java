@@ -1,6 +1,8 @@
 package pl.ctrlpkw.api.dto;
 
+import com.codepoetics.protonpack.StreamUtils;
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.wordnik.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
@@ -12,9 +14,12 @@ import lombok.experimental.Builder;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
 
 @ApiModel
 @Getter
@@ -71,6 +76,13 @@ public class BallotResult implements Serializable {
                 return sum;
             }
         };
+    }
+
+    public String toString() {
+        return StreamUtils.stream(Iterables.concat(Arrays.asList(votersEntitledCount, ballotsGivenCount, votesCastCount, votesValidCount), votesCountPerOption))
+                .map(i -> Optional.ofNullable(i).map(Object::toString).orElse(""))
+                .collect(Collectors.joining(","));
+
     }
 
 }

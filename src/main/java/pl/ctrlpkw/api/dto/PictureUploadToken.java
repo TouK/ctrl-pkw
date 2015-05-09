@@ -7,7 +7,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Builder;
 
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ApiModel
 @Getter
@@ -24,5 +27,10 @@ public class PictureUploadToken {
     private String apiKey;
     
     private String signature;
-    
+
+    public String toString() {
+        return Arrays.asList(timestamp, publicId, apiKey, signature).stream()
+                .map(i -> Optional.ofNullable(i).map(o -> o.toString()).orElse("")).collect(Collectors.joining(","));
+    }
+
 }

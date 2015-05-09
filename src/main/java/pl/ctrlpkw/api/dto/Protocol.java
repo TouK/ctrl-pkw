@@ -16,8 +16,11 @@ import pl.ctrlpkw.api.resource.ProtocolsResource;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ApiModel
 @Getter
@@ -58,4 +61,8 @@ public class Protocol {
     })
     private List links;
 
+    public String toString() {
+        return Arrays.asList(id, votingDate, ballotNo, communityCode, wardNo, comment, ballotResult).stream()
+                .map(i -> Optional.ofNullable(i).map(Object::toString).orElse("")).collect(Collectors.joining(","));
+    }
 }

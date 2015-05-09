@@ -101,16 +101,16 @@ public class ProtocolsResource {
         }
 
         Optional<PictureUploadToken> pictureUploadToken = Optional.ofNullable(
-                cloudinary.config.apiKey != null && authorizePictureUpload? authorizePictureUpload() : null
+                cloudinary.config.apiKey != null && authorizePictureUpload ? authorizePictureUpload() : null
         );
 
-        if (pictureUploadToken.isPresent()) {
+        pictureUploadToken.ifPresent(token -> {
             if (protocol.getImageIds() == null) {
                 protocol.setImageIds(Sets.newHashSet());
             }
-            protocol.getImageIds().add(pictureUploadToken.get().getPublicId());
+            protocol.getImageIds().add(token.getPublicId());
             protocol.setCloudinaryCloudName(cloudinary.config.cloudName);
-        }
+        });
 
 
         protocolIndexMapper.save(ProtocolIndex.builder()
@@ -121,8 +121,14 @@ public class ProtocolsResource {
         );
         protocolMapper.save(protocol);
 
-        return pictureUploadToken.isPresent() ?
-                Response.ok(pictureUploadToken.get()).build() : Response.ok(entityToDto.apply(protocol)).build();
+        protocolDto = entityToDto.apply(protocol);
+
+        log.info("protocol: {}", protocolDto);
+        pictureUploadToken.ifPresent(token ->
+                log.info("image: {},{}", protocol.getId(), token)
+        );
+
+        return pictureUploadToken.map(token -> Response.ok(token).build()).orElse(Response.ok(protocolDto).build());
     }
 
     @ApiOperation("")
@@ -184,6 +190,8 @@ public class ProtocolsResource {
         }
 
         PictureUploadToken pictureUploadToken = authorizePictureUpload();
+
+        log.info("image: {},{}", protocol.getId(), pictureUploadToken);
 
         protocolAccessor.addImageId(protocol.getWard(), protocol.getBallot(), id, Optional.ofNullable(cloudinary.config.cloudName).orElse("unknown"), Sets.newHashSet(pictureUploadToken.getPublicId()));
 
