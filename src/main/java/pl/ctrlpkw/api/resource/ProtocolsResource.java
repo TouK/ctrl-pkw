@@ -2,7 +2,6 @@ package pl.ctrlpkw.api.resource;
 
 import com.cloudinary.Cloudinary;
 import com.datastax.driver.mapping.Mapper;
-import com.datastax.driver.mapping.Result;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.stormpath.sdk.account.Account;
@@ -15,7 +14,10 @@ import com.wordnik.swagger.annotations.ApiResponses;
 import com.wordnik.swagger.annotations.Authorization;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
+import org.joda.time.Minutes;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import pl.ctrlpkw.api.constraint.VotesCountValid;
 import pl.ctrlpkw.api.dto.BallotResult;
@@ -48,6 +50,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -125,20 +128,28 @@ public class ProtocolsResource {
 
         log.info("protocol: {}", protocolDto);
         pictureUploadToken.ifPresent(token ->
-                log.info("image: {},{}", protocol.getId(), token)
+                        log.info("image: {},{}", protocol.getId(), token)
         );
 
         return pictureUploadToken.map(token -> Response.ok(token).build()).orElse(Response.ok(protocolDto).build());
     }
 
+    @Value("${protocols.shift:30}")
+    private int protocolsShift;
+
     @ApiOperation("")
     @AuthorizationRequired
     @GET
     public Iterable<pl.ctrlpkw.api.dto.Protocol> readSome(@QueryParam("count") @DefaultValue("5") int count) {
-        Result<Protocol> protocols = protocolAccessor.findNotVerified(count);
-        return StreamSupport.stream(protocols.spliterator(), false)
+        List<pl.ctrlpkw.api.dto.Protocol> protocols =
+                StreamSupport.stream(protocolAccessor.findNotVerified(count + protocolsShift).spliterator(), false)
+                .filter(p ->
+                        p.getCreationTime() != null
+                        && Minutes.minutesBetween(new DateTime(p.getCreationTime()), DateTime.now()).getMinutes() > 5)
                 .map(entityToDto)
                 .collect(Collectors.toList());
+        Collections.shuffle(protocols);
+        return protocols.subList(Math.max(0, protocols.size()-count), protocols.size());
     }
 
     @ApiOperation("Pobranie przesłanej informacji o wyniku głosowania w obwodzie")
