@@ -135,7 +135,7 @@ public class ProtocolsResource {
         return pictureUploadToken.map(token -> Response.ok(token).build()).orElse(Response.ok(protocolDto).build());
     }
 
-    @Value("${protocols.shift:30}")
+    @Value("${protocols.shift:300}")
     private int protocolsShift;
 
     @ApiOperation("")
@@ -144,13 +144,14 @@ public class ProtocolsResource {
     public Iterable<pl.ctrlpkw.api.dto.Protocol> readSome(@QueryParam("count") @DefaultValue("5") int count) {
         List<pl.ctrlpkw.api.dto.Protocol> protocols =
                 StreamSupport.stream(protocolAccessor.findNotVerified(count + protocolsShift).spliterator(), false)
-                .filter(p ->
-                                p.getCreationTime() != null
-                                        && Minutes.minutesBetween(new DateTime(p.getCreationTime()), DateTime.now()).getMinutes() > 5
-                )
-                .filter(p -> !CollectionUtils.isEmpty(p.getImageIds()))
-                .map(entityToDto)
-                .collect(Collectors.toList());
+                        .filter(p ->
+                                        p.getCreationTime() != null
+                                                && Minutes.minutesBetween(new DateTime(p.getCreationTime()), DateTime.now()).getMinutes() > 5
+                        )
+                        .filter(p -> !CollectionUtils.isEmpty(p.getImageIds()))
+                        .limit(10 + count)
+                        .map(entityToDto)
+                        .collect(Collectors.toList());
         Collections.shuffle(protocols);
         return protocols.subList(Math.max(0, protocols.size()-count), protocols.size());
     }
