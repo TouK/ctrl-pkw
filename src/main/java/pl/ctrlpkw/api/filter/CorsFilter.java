@@ -19,7 +19,7 @@ public class CorsFilter implements ContainerResponseFilter {
                                 .map(refererHeader -> URI.create(refererHeader).getHost())
                                 .orElse("*")
                 );
-        String allowedHeaders = String.join(", ", requestContext.getHeaders().keySet());
+            String allowedHeaders = String.join(", ", requestContext.getHeaders().keySet()) + ", " + requestContext.getHeaderString("Access-Control-Request-Headers");
 
         responseContext.getHeaders().add("Access-Control-Allow-Origin", allowedOrigin);
         responseContext.getHeaders().add("Access-Control-Allow-Headers", allowedHeaders);
