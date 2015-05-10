@@ -19,6 +19,7 @@ import org.joda.time.LocalDate;
 import org.joda.time.Minutes;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import pl.ctrlpkw.api.constraint.VotesCountValid;
 import pl.ctrlpkw.api.dto.BallotResult;
 import pl.ctrlpkw.api.dto.PictureUploadToken;
@@ -144,8 +145,10 @@ public class ProtocolsResource {
         List<pl.ctrlpkw.api.dto.Protocol> protocols =
                 StreamSupport.stream(protocolAccessor.findNotVerified(count + protocolsShift).spliterator(), false)
                 .filter(p ->
-                        p.getCreationTime() != null
-                        && Minutes.minutesBetween(new DateTime(p.getCreationTime()), DateTime.now()).getMinutes() > 5)
+                                p.getCreationTime() != null
+                                        && Minutes.minutesBetween(new DateTime(p.getCreationTime()), DateTime.now()).getMinutes() > 5
+                )
+                .filter(p -> !CollectionUtils.isEmpty(p.getImageIds()))
                 .map(entityToDto)
                 .collect(Collectors.toList());
         Collections.shuffle(protocols);
