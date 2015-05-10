@@ -249,7 +249,7 @@ public class WardsLoadingBatchConfig {
     public Job importWardsJob(JobBuilderFactory jobs, Step stepWards2010, Step stepWards2015, Step stepWards2015Abroad, Step stepWards2015Errata) {
         return jobs.get("importWards")
                 .incrementer(new RunIdIncrementer())
-                .flow(stepWards2015Errata).next(stepWards2015Abroad).next(stepWards2015).next(stepWards2010)
+                .flow(stepWards2010).next(stepWards2015Abroad).next(stepWards2015).next(stepWards2015Errata)
                 .end()
                 .build();
     }
