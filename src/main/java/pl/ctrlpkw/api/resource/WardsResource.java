@@ -6,12 +6,14 @@ import com.vividsolutions.jts.geom.Point;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import pl.ctrlpkw.api.dto.BallotResult;
 import pl.ctrlpkw.api.dto.Location;
 import pl.ctrlpkw.api.filter.ClientVersionCheck;
+import pl.ctrlpkw.api.filter.ClientVersionFilter;
 import pl.ctrlpkw.model.read.Voting;
 import pl.ctrlpkw.model.read.VotingRepository;
 import pl.ctrlpkw.model.read.Ward;
@@ -23,6 +25,7 @@ import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -30,6 +33,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -62,6 +66,9 @@ public class WardsResource {
     @Value("${wards.minCountLowerLimit:8}")
     private short minCountLowerLimit;
 
+    @HeaderParam(ClientVersionFilter.CLIENT_VERSION_HEADER)
+    private String clientVersionHeader;
+
     @ApiOperation(value = "Pobranie obwodów, których lokale wyborcze są nabliższe podanej lokalizacji", response = pl.ctrlpkw.api.dto.Ward.class, responseContainer = "List")
     @GET
     public Iterable<pl.ctrlpkw.api.dto.Ward> readByClosestLocation(
@@ -84,9 +91,17 @@ public class WardsResource {
                 voting, location, radius, minCount, maxCount
         )
                 .map(ward -> {
+                    pl.ctrlpkw.api.dto.Ward.ProtocolStatus protocolStatus = retrieveProtocolStatus(voting, ward);
+                    ComparableVersion clientVersion = new ComparableVersion(
+                            Optional.ofNullable(clientVersionHeader).orElse("0.0.1")
+                    );
+                    ComparableVersion currentVersion = new ComparableVersion("1.89.0");
+                    if (clientVersion.compareTo(currentVersion) < 0 && pl.ctrlpkw.api.dto.Ward.ProtocolStatus.VAGUE.equals(protocolStatus)) {
+                        protocolStatus = pl.ctrlpkw.api.dto.Ward.ProtocolStatus.LACK;
+                    }
                     pl.ctrlpkw.api.dto.Ward wardDto = entityToDto.apply(ward);
                     wardDto.setProtocolStatus(
-                            retrieveProtocolStatus(voting, ward)
+                            protocolStatus
                     );
                     return wardDto;
                 })
