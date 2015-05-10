@@ -63,7 +63,7 @@ public class VotesCountingService {
                 })
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .reduce(new BallotResult(0l, 0l, 0l, 0l, Lists.newArrayList()), BallotResult::add);
+                .reduce(new BallotResult(0, 0l, 0l, 0l, 0l, Lists.newArrayList()), BallotResult::add);
 
         log.info("Votes summing finished");
         try {

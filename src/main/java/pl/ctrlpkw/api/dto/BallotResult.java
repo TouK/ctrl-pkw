@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class BallotResult implements Serializable {
 
+    private Integer includedWardsCount;
+
     @NotNull
     private Long votersEntitledCount;
 
@@ -46,15 +48,16 @@ public class BallotResult implements Serializable {
 
     public BallotResult add(BallotResult result) {
         return BallotResult.builder()
-                .votersEntitledCount(this.getVotersEntitledCount() + result.getVotersEntitledCount())
-                .ballotsGivenCount(this.getBallotsGivenCount() + result.getBallotsGivenCount())
-                .votesCastCount(this.getVotesCastCount() + result.getVotesCastCount())
-                .votesValidCount(this.getVotesValidCount() + result.getVotesValidCount())
+                .includedWardsCount(this.includedWardsCount+result.includedWardsCount)
+                .votersEntitledCount(this.votersEntitledCount + result.votersEntitledCount)
+                .ballotsGivenCount(this.ballotsGivenCount + result.ballotsGivenCount)
+                .votesCastCount(this.votesCastCount + result.votesCastCount)
+                .votesValidCount(this.votesValidCount + result.votesValidCount)
                 .votesCountPerOption(
                         Lists.newArrayList(
                                 summingIterator(
-                                        this.getVotesCountPerOption().iterator(),
-                                        result.getVotesCountPerOption().iterator(),
+                                        this.votesCountPerOption.iterator(),
+                                        result.votesCountPerOption.iterator(),
                                         0l,
                                         (a, b) -> a + b
                                 )
@@ -79,7 +82,7 @@ public class BallotResult implements Serializable {
     }
 
     public String toString() {
-        return StreamUtils.stream(Iterables.concat(Arrays.asList(votersEntitledCount, ballotsGivenCount, votesCastCount, votesValidCount), votesCountPerOption))
+        return StreamUtils.stream(Iterables.concat(Arrays.asList(includedWardsCount, votersEntitledCount, ballotsGivenCount, votesCastCount, votesValidCount), votesCountPerOption))
                 .map(i -> Optional.ofNullable(i).map(Object::toString).orElse(""))
                 .collect(Collectors.joining(","));
 

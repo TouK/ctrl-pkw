@@ -117,6 +117,7 @@ public class ProtocolsGatheringIT extends IntegrationTestBase {
 
     protected void thenResultsAreSameAsIn2010() {
         BallotResult ballotResult = restTemplate.getForObject(RESULT_URL, BallotResult.class, serverPort, "2010-06-20", 1);
+        assertThat(ballotResult.getIncludedWardsCount()).isEqualTo(shortRun ? 100 : 25774);
         assertThat(ballotResult.getVotersEntitledCount()).isEqualTo(shortRun ? 138268 : 30813005);
         assertThat(ballotResult.getBallotsGivenCount()).isEqualTo(shortRun ? 69516 : 16929088);
         assertThat(ballotResult.getVotesCastCount()).isEqualTo(shortRun ? 69497 : 16923832);

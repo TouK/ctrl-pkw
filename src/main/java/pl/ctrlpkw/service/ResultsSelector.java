@@ -11,6 +11,7 @@ public interface ResultsSelector extends Function<List<Protocol>, Optional<Ballo
 
     public static final Function<Protocol, BallotResult > resultFromProtocol = protocol ->
             BallotResult.builder()
+                    .includedWardsCount(1)
                     .votersEntitledCount(protocol.getVotersEntitledCount())
                     .ballotsGivenCount(protocol.getBallotsGivenCount())
                     .votesCastCount(protocol.getVotesCastCount())
