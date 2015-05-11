@@ -66,6 +66,9 @@ public class WardsResource {
     @Value("${wards.minCountLowerLimit:8}")
     private short minCountLowerLimit;
 
+    @Value("${wards.missing.tolerance:0.002}")
+    private double missingWardTolerance;
+
     @HeaderParam(ClientVersionFilter.CLIENT_VERSION_HEADER)
     private String clientVersionHeader;
 
@@ -107,16 +110,18 @@ public class WardsResource {
                 })
                 .collect(Collectors.toList());
 
-        wards.add(pl.ctrlpkw.api.dto.Ward.builder()
-                        .communityCode(location.toText())
-                        .no(0)
-                        .label("Brakująca obwodowa komisja wyborcza")
-                        .shortLabel("Brakująca komisja")
-                        .address("W miejscu, gdzie jestem")
-                        .location(Location.builder().latitude(location.getY()).longitude(location.getX()).build())
-                        .protocolStatus(pl.ctrlpkw.api.dto.Ward.ProtocolStatus.CONFIRMED)
-                        .build()
-        );
+        if (!location.equalsExact(geometryFactory.createPoint(new Coordinate(wards.get(0).getLocation().getLongitude(), wards.get(0).getLocation().getLatitude())), missingWardTolerance)) {
+            wards.add(pl.ctrlpkw.api.dto.Ward.builder()
+                            .communityCode(location.toText())
+                            .no(0)
+                            .label("Brakująca obwodowa komisja wyborcza")
+                            .shortLabel("Brakująca komisja")
+                            .address("W miejscu, gdzie jestem")
+                            .location(Location.builder().latitude(location.getY()).longitude(location.getX()).build())
+                            .protocolStatus(pl.ctrlpkw.api.dto.Ward.ProtocolStatus.CONFIRMED)
+                            .build()
+            );
+        }
 
         return wards;
     }
