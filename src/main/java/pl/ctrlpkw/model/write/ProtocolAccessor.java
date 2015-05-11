@@ -12,6 +12,9 @@ import java.util.UUID;
 @Accessor
 public interface ProtocolAccessor {
 
+    @Query("SELECT * FROM ctrl_pkw.protocol where is_verified = false")
+    public Result<Protocol> findNotVerified();
+
     @Query("SELECT * FROM ctrl_pkw.protocol where is_verified = false limit :count")
     public Result<Protocol> findNotVerified(@Param("count") int count);
 

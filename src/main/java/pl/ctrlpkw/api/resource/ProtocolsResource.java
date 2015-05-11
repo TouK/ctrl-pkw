@@ -56,6 +56,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Api("Protokoly")
@@ -135,25 +136,25 @@ public class ProtocolsResource {
         return pictureUploadToken.map(token -> Response.ok(token).build()).orElse(Response.ok(protocolDto).build());
     }
 
-    @Value("${protocols.shift:300}")
+    @Value("${protocols.shift:30}")
     private int protocolsShift;
 
     @ApiOperation("")
     @AuthorizationRequired
     @GET
     public Iterable<pl.ctrlpkw.api.dto.Protocol> readSome(@QueryParam("count") @DefaultValue("5") int count) {
-        List<pl.ctrlpkw.api.dto.Protocol> protocols =
-                StreamSupport.stream(protocolAccessor.findNotVerified(count + protocolsShift).spliterator(), false)
-                        .filter(p ->
-                                        p.getCreationTime() != null
-                                                && Minutes.minutesBetween(new DateTime(p.getCreationTime()), DateTime.now()).getMinutes() > 5
-                        )
-                        .filter(p -> !CollectionUtils.isEmpty(p.getImageIds()))
-                        .limit(10 + count)
+        Stream<Protocol> protocols = StreamSupport.stream(protocolAccessor.findNotVerified().spliterator(), false)
+                .filter(p ->
+                                p.getCreationTime() != null
+                                        && Minutes.minutesBetween(new DateTime(p.getCreationTime()), DateTime.now()).getMinutes() > 5
+                )
+                .filter(p -> !CollectionUtils.isEmpty(p.getImageIds()))
+                .limit(protocolsShift + count);
+        List<pl.ctrlpkw.api.dto.Protocol> protocolDtos = protocols
                         .map(entityToDto)
                         .collect(Collectors.toList());
-        Collections.shuffle(protocols);
-        return protocols.subList(Math.max(0, protocols.size()-count), protocols.size());
+        Collections.shuffle(protocolDtos);
+        return protocolDtos.subList(Math.max(0, protocolDtos.size()-count), protocolDtos.size());
     }
 
     @ApiOperation("Pobranie przesłanej informacji o wyniku głosowania w obwodzie")
