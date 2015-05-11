@@ -214,7 +214,7 @@ public class ProtocolsResource {
 
     }
 
-    public enum VerificationResult { APPROVAL, DEPRECATION }
+    public enum VerificationResult { APPROVAL, DEPRECATION, SKIP }
 
     @ApiOperation(value = "", authorizations = @Authorization("oauth2"))
     @POST
@@ -240,6 +240,9 @@ public class ProtocolsResource {
                 break;
             case DEPRECATION:
                 protocolAccessor.addDeprecation(protocol.getWard(), protocol.getBallot(), id, Sets.newHashSet(username));
+                break;
+            case SKIP:
+                protocolAccessor.skipVerification(protocol.getWard(), protocol.getBallot(), id);
                 break;
         }
         return Response.ok(protocol).build();
