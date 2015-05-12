@@ -3,6 +3,7 @@ package pl.ctrlpkw.service;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import pl.ctrlpkw.api.dto.BallotResult;
@@ -26,6 +27,9 @@ public class QuorumConsensusResultsSelector implements ResultsSelector {
     @Getter
     @Setter
     private List<QuorumConfigurationEntry> config = Lists.newArrayList();
+
+    @Value("${counting.tolerant:false}")
+    private boolean tolerantCounting;
 
     @Override
     public Optional<BallotResult> apply(List<Protocol> wardProtocols) {
@@ -86,8 +90,11 @@ public class QuorumConsensusResultsSelector implements ResultsSelector {
         }
 
         public boolean isQuorumSatisfied() {
-            return config.stream()
-                    .anyMatch(c -> c.isInRuleRange(allProtocolsCount, result.getValue().doubleValue() / allProtocolsCount));
+            return (tolerantCounting && result.getValue() == 1 && allProtocolsCount == 1)
+                    ||
+                    config.stream().anyMatch(
+                            c -> c.isInRuleRange(allProtocolsCount, result.getValue().doubleValue() / allProtocolsCount)
+                    );
         }
 
         public BestResultHolder chooseBetterAndSumProtocolsCount(BestResultHolder other) {

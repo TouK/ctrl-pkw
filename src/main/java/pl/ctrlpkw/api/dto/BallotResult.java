@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @Builder
-@EqualsAndHashCode
+@EqualsAndHashCode(of = { "votesValidCount", "votesCountPerOption" })
 @NoArgsConstructor
 @AllArgsConstructor
 public class BallotResult implements Serializable {
