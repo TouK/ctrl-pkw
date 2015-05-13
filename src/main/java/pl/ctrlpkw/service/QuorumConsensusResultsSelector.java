@@ -3,6 +3,7 @@ package pl.ctrlpkw.service;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
 
+@Slf4j
 @Component
 @ConfigurationProperties(prefix = "protocol.selector")
 public class QuorumConsensusResultsSelector implements ResultsSelector {
@@ -42,6 +44,10 @@ public class QuorumConsensusResultsSelector implements ResultsSelector {
         }
 
         Optional<BallotResult> quorumSatisfiedResult = retrieveBestResultIfItSatisfiesQuorum(wardProtocols);
+        if (!quorumSatisfiedResult.isPresent()) {
+            log.info("protocols do not match for ward: {}", wardProtocols.get(0).getWard());
+            log.debug("{}", wardProtocols.stream().map(Protocol::getVotesCountPerOption).collect(Collectors.toList()));
+        }
         return quorumSatisfiedResult;
     }
 
