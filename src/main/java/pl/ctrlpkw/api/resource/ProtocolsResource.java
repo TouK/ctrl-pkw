@@ -97,6 +97,9 @@ public class ProtocolsResource {
             @HeaderParam(CLIENT_ID_HEADER) String clientId
     ) {
 
+        protocolDto.setCommunityCode(
+                ("000000" + protocolDto.getCommunityCode()).substring(protocolDto.getCommunityCode().length())
+        );
         Protocol protocol = dtoToEntity.apply(protocolDto);
         protocol.setClientId(StringUtils.isNotEmpty(clientId) ? clientId : servletRequest.getRemoteAddr());
 
