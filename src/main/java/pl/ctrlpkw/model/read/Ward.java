@@ -26,6 +26,7 @@ public class Ward {
     private String communityCode;
     private Integer wardNo;
     private String wardAddress;
+    private Integer votersCount;
 
     @Type(type="org.hibernate.spatial.GeometryType")
     private Point location;
