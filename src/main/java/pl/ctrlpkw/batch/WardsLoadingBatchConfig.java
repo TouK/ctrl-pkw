@@ -95,14 +95,14 @@ public class WardsLoadingBatchConfig {
                 .build();
     }
 
+
     @Bean
     public ItemReader<FieldSet> wards2015Reader() {
         FlatFileItemReader<FieldSet> reader = new FlatFileItemReader<>();
-        reader.setResource(new ClassPathResource("obwody-2014-11-15-18-00-27.csv"));
-        reader.setEncoding("Cp1250");
-        reader.setLinesToSkip(1);
+        reader.setResource(new ClassPathResource("obwody-2015.csv"));
+        reader.setLinesToSkip(0);
         reader.setLineMapper(new DefaultLineMapper<FieldSet>() {{
-            setLineTokenizer(new DelimitedLineTokenizer(";"));
+            setLineTokenizer(new DelimitedLineTokenizer("|"));
             setFieldSetMapper(new PassThroughFieldSetMapper());
         }});
         return reader;
@@ -116,20 +116,17 @@ public class WardsLoadingBatchConfig {
         return item -> {
             Ward ward = new Ward();
             ward.setVotings(votings);
-            ward.setCommunityCode(item.readString(2).substring(2, 8));
-            ward.setWardNo(item.readInt(5));
-            ward.setWardAddress(item.readString(6));
-            ward.setLabel("Obwodowa komisja wyborcza: " + item.readString(3).split(",", 2)[0] + " nr " + item.readString(5));
-            ward.setShortLabel("Komisja nr " + item.readString(5));
-            if (item.getFieldCount() >= 12) {
+            ward.setCommunityCode(item.readString(0));
+            ward.setWardNo(item.readInt(4));
+            ward.setWardAddress(item.readString(8) + " " + " " + item.readString(9) + " " + item.readString(10) + ", " + item.readString(12).replaceFirst(",.*", ""));
+            ward.setLabel(item.readString(1).replaceFirst("g?m\\. ", "") + ", Obwodowa Komisja Wyborcza nr " + item.readString(4));
+            ward.setShortLabel("Komisja nr " + item.readString(4));
+            ward.setVotersCount(item.readInt(13));
+            if (item.getFieldCount() >= 14) {
                 ward.setLocation(geometryFactory.createPoint(new Coordinate(
-                        item.readDouble(11),
-                        item.readDouble(10)
+                        item.readDouble(15),
+                        item.readDouble(14)
                 )));
-                if (ward.getLocation().getY() < 49.00 || ward.getLocation().getY() > 54.84 || ward.getLocation().getX() < 14.12 || ward.getLocation().getX() > 24.13) {
-                    log.warn("Invalid coordinates of {} {} : {},{}", ward.getCommunityCode(), ward.getWardNo(), ward.getLocation().getY(), ward.getLocation().getX());
-                    ward.setLocation(null);
-                }
             }
             return ward;
         };
@@ -144,7 +141,7 @@ public class WardsLoadingBatchConfig {
 
     @Bean
     public Step stepWards2015(StepBuilderFactory stepBuilderFactory, ItemReader<FieldSet> wards2015Reader,
-                              ItemProcessor<FieldSet, Ward> wards2015Processor, ItemWriter<Ward> wards2015Writer) {
+                                    ItemProcessor<FieldSet, Ward> wards2015Processor, ItemWriter<Ward> wards2015Writer) {
         return stepBuilderFactory.get("wards2015")
                 .<FieldSet, Ward> chunk(1000)
                 .reader(wards2015Reader)
@@ -154,102 +151,10 @@ public class WardsLoadingBatchConfig {
     }
 
     @Bean
-    public ItemReader<FieldSet> wards2015AbroadReader() {
-        FlatFileItemReader<FieldSet> reader = new FlatFileItemReader<>();
-        reader.setResource(new ClassPathResource("obwody_zagraniczne.csv"));
-        reader.setLinesToSkip(0);
-        reader.setLineMapper(new DefaultLineMapper<FieldSet>() {{
-            setLineTokenizer(new DelimitedLineTokenizer(";"));
-            setFieldSetMapper(new PassThroughFieldSetMapper());
-        }});
-        return reader;
-    }
-
-    @Bean
-    public ItemProcessor<FieldSet, Ward> wards2015AbroadProcessor() {
-        ArrayList<Voting> votings = Lists.newArrayList(votingRepository.findByDate(
-                Arrays.asList(LocalDate.parse("2015-05-10"), LocalDate.parse("2015-05-24"))
-        ));
-        return item -> {
-            Ward ward = new Ward();
-            ward.setVotings(votings);
-            ward.setCommunityCode("149901");
-            ward.setWardNo(item.readInt(0));
-            ward.setWardAddress(item.readString(3) + " " + item.readString(4));
-            ward.setLabel("Obwodowa komisja wyborcza za granicą nr " + item.readString(0) + " : " + item.readString(2));
-            ward.setShortLabel("Komisja nr " + item.readString(0));
-            if (item.getFieldCount() >= 7) {
-                ward.setLocation(geometryFactory.createPoint(new Coordinate(
-                        item.readDouble(6),
-                        item.readDouble(5)
-                )));
-            }
-            return ward;
-        };
-    }
-
-    @Bean
-    public Step stepWards2015Abroad(StepBuilderFactory stepBuilderFactory, ItemReader<FieldSet> wards2015AbroadReader,
-                              ItemProcessor<FieldSet, Ward> wards2015AbroadProcessor, ItemWriter<Ward> wards2015Writer) {
-        return stepBuilderFactory.get("wards2015Abroad")
-                .<FieldSet, Ward> chunk(1000)
-                .reader(wards2015AbroadReader)
-                .processor(wards2015AbroadProcessor)
-                .writer(wards2015Writer)
-                .build();
-    }
-
-    @Bean
-    public ItemReader<FieldSet> wards2015ErrataReader() {
-        FlatFileItemReader<FieldSet> reader = new FlatFileItemReader<>();
-        reader.setResource(new ClassPathResource("errata_2015.csv"));
-        reader.setLinesToSkip(0);
-        reader.setLineMapper(new DefaultLineMapper<FieldSet>() {{
-            setLineTokenizer(new DelimitedLineTokenizer("|"));
-            setFieldSetMapper(new PassThroughFieldSetMapper());
-        }});
-        return reader;
-    }
-
-    @Bean
-    public ItemProcessor<FieldSet, Ward> wards2015ErrataProcessor() {
-        ArrayList<Voting> votings = Lists.newArrayList(votingRepository.findByDate(
-                Arrays.asList(LocalDate.parse("2015-05-10"), LocalDate.parse("2015-05-24"))
-        ));
-        return item -> {
-            Ward ward = new Ward();
-            ward.setVotings(votings);
-            ward.setCommunityCode(item.readString(0));
-            ward.setWardNo(item.readInt(4));
-            ward.setWardAddress(item.readString(11) + " " + item.readString(12) + " " + item.readString(13));
-            ward.setLabel("Obwodowa komisja wyborcza: " + item.readString(1).replaceFirst("g?m\\. ", "") + " nr " + item.readString(4));
-            ward.setShortLabel("Komisja nr " + item.readString(4));
-            if (item.getFieldCount() >= 17) {
-                ward.setLocation(geometryFactory.createPoint(new Coordinate(
-                        item.readDouble(18),
-                        item.readDouble(17)
-                )));
-            }
-            return ward;
-        };
-    }
-
-    @Bean
-    public Step stepWards2015Errata(StepBuilderFactory stepBuilderFactory, ItemReader<FieldSet> wards2015ErrataReader,
-                                    ItemProcessor<FieldSet, Ward> wards2015ErrataProcessor, ItemWriter<Ward> wards2015Writer) {
-        return stepBuilderFactory.get("wards2015Errata")
-                .<FieldSet, Ward> chunk(1000)
-                .reader(wards2015ErrataReader)
-                .processor(wards2015ErrataProcessor)
-                .writer(wards2015Writer)
-                .build();
-    }
-
-    @Bean
-    public Job importWardsJob(JobBuilderFactory jobs, Step stepWards2010, Step stepWards2015, Step stepWards2015Abroad, Step stepWards2015Errata) {
+    public Job importWardsJob(JobBuilderFactory jobs, Step stepWards2010, Step stepWards2015) {
         return jobs.get("importWards")
                 .incrementer(new RunIdIncrementer())
-                .flow(stepWards2010).next(stepWards2015Abroad).next(stepWards2015).next(stepWards2015Errata)
+                .flow(stepWards2010).next(stepWards2015)
                 .end()
                 .build();
     }
